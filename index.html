@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Test Case Creator</title>
+    <link rel="stylesheet" href="css/bootstrap-reboot.css">
+    <link rel="stylesheet" href="css/bootstrap-flex.css">
+    <link rel="stylesheet" href="css/bootstrap-grid.css">
+    <link rel="stylesheet" href="css/bootstrap.css">
+</head>
+
+<style>
+    td, th {
+        /*padding: 10px;*/
+        padding: 0 10px 0 5px;
+        vertical-align: top;
+    }
+
+    textarea {
+        width: 100%;
+        resize: none;
+        overflow: hidden;
+        min-height: 55px;
+    }
+
+    button {
+        margin-bottom: 25px;
+    }
+
+    .remove-icon {
+        font-size: 24px;
+        line-height: 30px;
+        font-weight: bold;
+        padding: 10px;
+        cursor: pointer;
+    }
+
+    .remove-icon:hover {
+        color: #00870d;
+    }
+
+</style>
+
+<body class="text-sm-center" style="max-width: 1024px; margin: auto;">
+
+<br>
+<br>
+
+<div class="form-group row">
+    <label class="col-sm-2 col-form-label">Название:</label>
+    <div class="col-sm-10">
+        <input type="text" class="form-control js-test-name" placeholder="Название теста">
+    </div>
+</div>
+<div class="form-group row">
+    <label class="col-sm-2 col-form-label">Функция:</label>
+    <div class="col-sm-10">
+        <input type="text" class="form-control js-text-function" placeholder="Функция теста">
+    </div>
+</div>
+
+<!-------------------------------------------------------------------------------------------------->
+
+<table class="table">
+    <tbody id="preconditionsTable">
+    <tr>
+        <th colspan="5" class="text-sm-center">ПРЕДУСЛОВИЯ</th>
+    </tr>
+    </tbody>
+</table>
+<button type="button" class="btn btn-info js-add-precondition">Добавить предуловие</button>
+
+<!-------------------------------------------------------------------------------------------------->
+
+<table class="table">
+    <tbody id="stepsTable">
+    <tr>
+        <th colspan="5" class="text-sm-center">ШАГИ ТЕСТА</th>
+    </tr>
+    </tbody>
+</table>
+<button type="button" class="btn btn-info js-add-step">Добавить шаг теста</button>
+
+<!-------------------------------------------------------------------------------------------------->
+
+<table class="table">
+    <tbody id="postconditionsTable">
+    <tr>
+        <th colspan="5" class="text-sm-center">ПОСТУСЛОВИЯ</th>
+    </tr>
+    <!--<tr class="table-active">-->
+        <!--<th width="50%">Действие</th>-->
+        <!--<th width="50%">Ожидаемый результат</th>-->
+        <!--<th width="1%"></th>-->
+    <!--</tr>-->
+    </tbody>
+</table>
+<button type="button" class="btn btn-info js-add-postcondition">Добавить постусловие</button>
+
+<!-------------------------------------------------------------------------------------------------->
+
+<br>
+<br>
+<br>
+
+<button type="button" class="btn btn-primary js-do-magic">Запустить магию!</button>
+
+<hr>
+<br>
+<br>
+<br>
+
+
+<table class="text-sm-left" style="vertical-align: top" border="1" cellspacing="5">
+    <tbody id="resultTable">
+    </tbody>
+</table>
+
+<br>
+<br>
+<br>
+<hr>
+
+
+<script src="js/jquery-3.1.1.min.js"></script>
+<script src="js/jszip.min.js"></script>
+<script src="js/odt.js"></script>
+<script src="js/index.js"></script>
+</body>
+</html>
