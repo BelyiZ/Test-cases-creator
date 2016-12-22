@@ -3,10 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <title>Test Case Creator</title>
-    <link rel="stylesheet" href="css/bootstrap-reboot.css">
-    <link rel="stylesheet" href="css/bootstrap-flex.css">
+    <link rel="stylesheet" href="css/font-awesome.min.css">
+    <link rel="stylesheet" href="css/bootstrap-reboot.min.css">
+    <link rel="stylesheet" href="css/bootstrap-flex.min.css">
     <link rel="stylesheet" href="css/bootstrap-grid.css">
-    <link rel="stylesheet" href="css/bootstrap.css">
+    <link rel="stylesheet" href="css/bootstrap.min.css">
 </head>
 
 <style>
@@ -29,14 +30,18 @@
 
     .remove-icon {
         font-size: 24px;
-        line-height: 30px;
-        font-weight: bold;
-        padding: 10px;
-        cursor: pointer;
     }
 
     .remove-icon:hover {
-        color: #00870d;
+        color: #696a6b;
+    }
+
+    .clickable {
+        cursor: pointer;
+    }
+
+    .btn+.btn {
+        margin-left: 20px;
     }
 
 </style>
@@ -46,17 +51,13 @@
 <br>
 <br>
 
-<div class="form-group row">
-    <label class="col-sm-2 col-form-label">Название:</label>
-    <div class="col-sm-10">
-        <input type="text" class="form-control js-test-name" placeholder="Название теста">
-    </div>
+<div>
+    <b>ШАПКА ТАБЛИЦЫ</b>
+    <i class="fa fa-edit clickable js-edit-header-params"></i>
 </div>
-<div class="form-group row">
-    <label class="col-sm-2 col-form-label">Описание:</label>
-    <div class="col-sm-10">
-        <input type="text" class="form-control js-text-function" placeholder="Функция теста">
-    </div>
+<br>
+<div id="testHeaderRows">
+
 </div>
 
 <!-------------------------------------------------------------------------------------------------->
@@ -64,7 +65,10 @@
 <table class="table">
     <tbody id="preconditionsTable">
     <tr>
-        <th colspan="5" class="text-sm-center">ПРЕДУСЛОВИЯ</th>
+        <th colspan="5" class="text-sm-center">
+            ПРЕДУСЛОВИЯ
+            <i class="fa fa-edit clickable js-edit-preconditions-params"></i>
+        </th>
     </tr>
     </tbody>
 </table>
@@ -75,7 +79,10 @@
 <table class="table">
     <tbody id="stepsTable">
     <tr>
-        <th colspan="5" class="text-sm-center">ШАГИ ТЕСТА</th>
+        <th colspan="5" class="text-sm-center">
+            ШАГИ ТЕСТА
+            <i class="fa fa-edit clickable js-edit-steps-params"></i>
+        </th>
     </tr>
     </tbody>
 </table>
@@ -86,7 +93,10 @@
 <table class="table">
     <tbody id="postconditionsTable">
     <tr>
-        <th colspan="5" class="text-sm-center">ПОСТУСЛОВИЯ</th>
+        <th colspan="5" class="text-sm-center">
+            ПОСТУСЛОВИЯ
+            <i class="fa fa-edit clickable js-edit-postconditions-params"></i>
+        </th>
     </tr>
     </tbody>
 </table>
@@ -118,8 +128,8 @@
 
 
 <script src="js/jquery-3.1.1.min.js"></script>
-<script src="js/jszip.min.js"></script>
-<script src="js/odt.js"></script>
+<script src="https://npmcdn.com/tether@1.2.4/dist/js/tether.min.js"></script>
+<script src="js/bootstrap.min.js"></script>
 <script src="js/index.js"></script>
 </body>
 </html>

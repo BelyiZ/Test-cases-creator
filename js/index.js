@@ -3,63 +3,78 @@
  */
 const $body = $('body');
 
+const $testHeaderRows = $('#testHeaderRows');
 const $preconditionsTable = $('#preconditionsTable');
 const $stepsTable = $('#stepsTable');
 const $postconditionsTable = $('#postconditionsTable');
 
-const $name = $('.js-test-name');
-const $function = $('.js-text-function');
-
 const $resultTable = $('#resultTable');
 
-const preconditionsTableParams = {
-    cells: [
-        {className: 'js-number', colspan: 1, width: '1%', name: '№', isOrderNumber: true, inInputs: false, inResult: true},
-        // {className: 'js-code', colspan: 1, width: '15%', name: 'Код', inInputs: true, inResult: true},
-        {className: 'js-name', colspan: '100%', width: '90%', name: 'Описание', inInputs: true, inResult: true}
+let headerParams = {
+    rows: [
+        {code: 'name', colspan: 1, width: '1%', name: 'Название', inInputs: true, inResult: true},
+        {code: 'code', colspan: 1, width: '1%', name: 'Код', inInputs: true, inResult: true},
+        {code: 'description', colspan: 1, width: '1%', name: 'Описание', inInputs: true, inResult: true},
     ]
 };
 
-const stepsTableParams = {
+let preconditionsTableParams = {
     cells: [
-        {className: 'js-number', colspan: 1, width: '1%', name: '№', isOrderNumber: true, inInputs: false, inResult: true},
-        {className: 'js-code', colspan: 1, width: '10%', name: 'Код', inInputs: true, inResult: true},
-        {className: 'js-name', colspan: 2, width: '30%', name: 'Действие', inInputs: true, inResult: true},
-        {className: 'js-expected', colspan: 2, width: '30%', name: 'Ожидаемый результат', inInputs: true, inResult: true},
-        {className: 'js-result', colspan: '100%', width: '', name: 'Фактический результат', inInputs: false, inResult: true}
+        {code: 'number', colspan: 1, width: '1%', name: '№', isOrderNumber: true, inInputs: false, inResult: true},
+        // {code: 'code', colspan: 1, width: '15%', name: 'Код', inInputs: true, inResult: true},
+        {code: 'name', colspan: '100%', width: '90%', name: 'Описание', inInputs: true, inResult: true}
     ]
 };
 
-const postconditionsTableParams = {
+let stepsTableParams = {
     cells: [
-        {className: 'js-number', colspan: 1, width: '1%', name: '№', isOrderNumber: true, inInputs: false, inResult: true},
-        // {className: 'js-code', colspan: 1, width: '15%', name: 'Код', inInputs: true, inResult: true},
-        {className: 'js-name', colspan: '100%', width: '90%', name: 'Описание', inInputs: true, inResult: true}
+        {code: 'number', colspan: 1, width: '1%', name: '№', isOrderNumber: true, inInputs: false, inResult: true},
+        {code: 'code', colspan: 1, width: '10%', name: 'Код', inInputs: true, inResult: true},
+        {code: 'name', colspan: 2, width: '30%', name: 'Действие', inInputs: true, inResult: true},
+        {code: 'expected', colspan: 2, width: '30%', name: 'Ожидаемый результат', inInputs: true, inResult: true},
+        {code: 'result', colspan: '100%', width: '', name: 'Фактический результат', inInputs: false, inResult: true}
+    ]
+};
+
+let postconditionsTableParams = {
+    cells: [
+        {code: 'number', colspan: 1, width: '1%', name: '№', isOrderNumber: true, inInputs: false, inResult: true},
+        // {code: 'code', colspan: 1, width: '15%', name: 'Код', inInputs: true, inResult: true},
+        {code: 'name', colspan: '100%', width: '90%', name: 'Описание', inInputs: true, inResult: true}
     ]
 };
 
 $(document).ready(function () {
+    generateTestHeaderRows();
 
     $body.on('click', '.js-do-magic', function () {
         $resultTable.html('');
 
-        $resultTable.append(`<tr>
-                                <td width="1%" colspan="2"><b>Название:</b></td>
-                                <td colspan="100%">${$name.val()}</td>
-                            </tr>`);
-        $resultTable.append(`<tr>
-                                <td width="1%" colspan="2"><b>Функция:</b></td>
-                                <td colspan="100%">${$function.val()}</td>
-                            </tr>`);
+        for (const rowParam of headerParams.rows) {
+            if (rowParam.inResult) {
+                $resultTable.append(`
+                    <tr>
+                        <td width="${rowParam.width || ''}" colspan="${rowParam.colspan || ''}"><b>${rowParam.name}:</b></td>
+                        <td colspan="100%">${getCellValue($testHeaderRows, rowParam.code)}</td>
+                    </tr>
+                `);
+            }
+        }
 
-        $resultTable.append('<tr><td colspan="100%"><br><b>Предусловия:</b></td></tr>');
-        addItemsToResultTable($preconditionsTable, preconditionsTableParams);
+        if (preconditionsTableParams.cells && preconditionsTableParams.cells.length) {
+            $resultTable.append('<tr><td colspan="100%"><br><b>Предусловия:</b></td></tr>');
+            addItemsToResultTable($preconditionsTable, preconditionsTableParams);
+        }
 
-        $resultTable.append('<tr><td colspan="100%"><br><b>Шаги теста:</b></td></tr>');
-        addItemsToResultTable($stepsTable, stepsTableParams);
+        if (stepsTableParams.cells && stepsTableParams.cells.length) {
+            $resultTable.append('<tr><td colspan="100%"><br><b>Шаги теста:</b></td></tr>');
+            addItemsToResultTable($stepsTable, stepsTableParams);
+        }
 
-        $resultTable.append('<tr><td colspan="100%"><br><b>Постусловия:</b></td></tr>');
-        addItemsToResultTable($postconditionsTable, postconditionsTableParams);
+        if (postconditionsTableParams.cells && postconditionsTableParams.cells.length) {
+            $resultTable.append('<tr><td colspan="100%"><br><b>Постусловия:</b></td></tr>');
+            addItemsToResultTable($postconditionsTable, postconditionsTableParams);
+        }
     });
 
     $body.on('click', '.js-remove-item', function (e) {
@@ -73,32 +88,75 @@ $(document).ready(function () {
     $body.on('click', '.js-add-precondition', function () {
         appendRow($preconditionsTable, preconditionsTableParams);
     });
+
     $body.on('click', '.js-add-step', function () {
         appendRow($stepsTable, stepsTableParams);
     });
+
     $body.on('click', '.js-add-postcondition', function () {
         appendRow($postconditionsTable, postconditionsTableParams);
     });
+
+    $body.on('click', '.js-edit-header-params', function () {
+        showParamsDialog('Редактирование параметров таблицы предусловий', headerParams, function (json) {
+            headerParams = json;
+            generateTestHeaderRows();
+        })
+    });
+    $body.on('click', '.js-edit-preconditions-params', function () {
+        showParamsDialog('Редактирование параметров таблицы предусловий', preconditionsTableParams, function (json) {
+            preconditionsTableParams = json;
+            $preconditionsTable.find('.js-item').remove();
+        })
+    });
+    $body.on('click', '.js-edit-steps-params', function () {
+        showParamsDialog('Редактирование параметров таблицы шагов', stepsTableParams, function (json) {
+            stepsTableParams = json;
+            $stepsTable.find('.js-item').remove();
+        })
+    });
+    $body.on('click', '.js-edit-postconditions-params', function () {
+        showParamsDialog('Редактирование параметров таблицы постусловий', postconditionsTableParams, function (json) {
+            postconditionsTableParams = json;
+            $postconditionsTable.find('.js-item').remove();
+        })
+    })
 });
+
+function generateTestHeaderRows() {
+    $testHeaderRows.html('');
+    for (const rowParam of headerParams.rows) {
+        if (rowParam.inInputs) {
+            $testHeaderRows.append(`
+                <div class="form-group row">
+                    <label class="col-sm-2 col-form-label text-sm-right">${rowParam.name}:</label>
+                    <div class="col-sm-10">
+                        <input type="text" class="form-control" data-cell-code="${rowParam.code}"/>
+                    </div>
+                </div>
+            `);
+        }
+    }
+}
 
 function appendRow($table, params) {
     let rowContent = '';
     for (const cellParam of params.cells) {
         if (cellParam.inInputs) {
-            rowContent += buildRowWithTextArea(cellParam.className, cellParam.name, cellParam.width);
+            rowContent += buildRowWithTextArea(cellParam.code, cellParam.name, cellParam.width);
         }
     }
     $table.append(`\
         <tr class="js-item">
             ${rowContent}\
-            <td width="1%"><span class="remove-icon js-remove-item">x</span></td>\
+            <td width="1%"><i class="fa fa-remove clickable remove-icon js-remove-item"></i></td>\
         </tr>\
     `);
 }
 
 function buildRowWithTextArea(areaClass, placeholder, tdWidth) {
     return `<td width="${tdWidth || ''}">
-                <textarea class="${areaClass || ''} form-control" placeholder="${placeholder || ''}"></textarea>
+                <textarea data-cell-code="${areaClass || ''}" class="form-control" placeholder="${placeholder || ''}"></textarea>
             </td>`;
 }
 
@@ -107,11 +165,11 @@ function resizeTextArea(element) {
     element.style.height = (element.scrollHeight) + 'px';
 }
 
-function addItemsToResultTable($itemsTable, params) {
-    const getCellValue = function ($row, cellClass) {
-        return ($row.find(`.${cellClass}`).val() || '').trim();
-    };
+function getCellValue($container, code) {
+    return ($container.find(`[data-cell-code="${code}"]`).val() || '').trim();
+}
 
+function addItemsToResultTable($itemsTable, params) {
     let rowContent = '';
     for (const cellParam of params.cells) {
         rowContent += `<td colspan="${cellParam.colspan}" width="${cellParam.width || ''}">${cellParam.name}</td>`
@@ -129,7 +187,7 @@ function addItemsToResultTable($itemsTable, params) {
                         rowContent += `<td colspan="1" width="1%">${rowNum}</td>`;
                     } else {
                         rowContent += `<td colspan="${cellParam.colspan}" width="${cellParam.width || ''}">
-                                           ${getCellValue($item, cellParam.className)}
+                                           ${getCellValue($item, cellParam.code)}
                                        </td>`
                     }
                 }
@@ -147,4 +205,47 @@ function checkRowHasData($row) {
         }
     }
     return false;
+}
+
+function showParamsDialog(title, json, onSave) {
+    const html = `
+        <div class="modal fade" tabindex="-1" role="dialog">
+            <div class="modal-dialog  modal-lg" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                        <h4 class="modal-title">${title}</h4>
+                    </div>
+                    <div class="modal-body">
+                        <div class="alert alert-warning" role="alert">
+                            <strong>Внимание!</strong> После сохранения все данные из таблицы будут удалены.
+                        </div>
+                        <div class="alert alert-info" role="alert">
+                            Проверок правильности JSON'a пока никаких нет. Пишите сразу правильно. 
+                        </div>
+                        <textarea class="form-control js-params">${JSON.stringify(json, null, 4)}</textarea>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Отмена</button>
+                        <button type="button" class="btn btn-primary js-save-btn">Сохранить</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    const $modal = $(html);
+    const $paramsArea = $modal.find('textarea.js-params');
+    $modal.on('click', '.js-save-btn', function () {
+        onSave(JSON.parse($paramsArea.val()));
+        $modal.modal('hide');
+    });
+    $modal.on('hidden.bs.modal', function () {
+        $modal.remove();
+    });
+    $modal.on('shown.bs.modal', function () {
+        resizeTextArea($paramsArea[0]);
+    });
+    $modal.modal('show');
 }
