@@ -12,9 +12,9 @@ const $resultTable = $('#resultTable');
 
 let headerParams = {
     rows: [
-        {code: 'name', colspan: 1, width: '1%', name: 'Название', inInputs: true, inResult: true},
-        {code: 'code', colspan: 1, width: '1%', name: 'Код', inInputs: true, inResult: true},
-        {code: 'description', colspan: 1, width: '1%', name: 'Описание', inInputs: true, inResult: true},
+        {code: 'name', colspan: 2, width: '1%', name: 'Название', inInputs: true, inResult: true},
+        {code: 'code', colspan: 2, width: '1%', name: 'Код', inInputs: true, inResult: true},
+        {code: 'description', colspan: 2, width: '1%', name: 'Описание', inInputs: true, inResult: true},
     ]
 };
 
@@ -123,6 +123,9 @@ $(document).ready(function () {
     })
 });
 
+/**
+ * Generate fields for test general information. It will be used in header of result table.
+ */
 function generateTestHeaderRows() {
     $testHeaderRows.html('');
     for (const rowParam of headerParams.rows) {
@@ -139,11 +142,20 @@ function generateTestHeaderRows() {
     }
 }
 
+/**
+ * Add new row with inputs in target table.
+ * @param $table table to add row
+ * @param params row params
+ */
 function appendRow($table, params) {
     let rowContent = '';
     for (const cellParam of params.cells) {
         if (cellParam.inInputs) {
-            rowContent += buildRowWithTextArea(cellParam.code, cellParam.name, cellParam.width);
+            rowContent += `
+                <td width="${cellParam.width || ''}">
+                    <textarea data-cell-code="${cellParam.code || ''}" class="form-control" placeholder="${cellParam.name || ''}"></textarea>
+                </td>
+            `;
         }
     }
     $table.append(`\
@@ -154,21 +166,29 @@ function appendRow($table, params) {
     `);
 }
 
-function buildRowWithTextArea(areaClass, placeholder, tdWidth) {
-    return `<td width="${tdWidth || ''}">
-                <textarea data-cell-code="${areaClass || ''}" class="form-control" placeholder="${placeholder || ''}"></textarea>
-            </td>`;
-}
-
+/**
+ * Calculate textarea height by included content
+ * @param element textarea DOM-element
+ */
 function resizeTextArea(element) {
-    element.style.height = '5px';
     element.style.height = (element.scrollHeight) + 'px';
 }
 
+/**
+ * Get cell value by container and cell code
+ * @param $container container includes target cell
+ * @param code code of target cell
+ * @returns {string} cell value or empty string
+ */
 function getCellValue($container, code) {
     return ($container.find(`[data-cell-code="${code}"]`).val() || '').trim();
 }
 
+/**
+ * Add block of items (such as preconditions or steps) into the result table
+ * @param $itemsTable source table with item's data
+ * @param params inserting params
+ */
 function addItemsToResultTable($itemsTable, params) {
     let rowContent = '';
     for (const cellParam of params.cells) {
@@ -198,6 +218,11 @@ function addItemsToResultTable($itemsTable, params) {
     }
 }
 
+/**
+ * Check source row contains data or empty
+ * @param $row target row
+ * @returns {boolean} true if contains data, else otherwise
+ */
 function checkRowHasData($row) {
     for (let textarea of $row.find('textarea')) {
         if ($(textarea).val()) {
@@ -207,6 +232,12 @@ function checkRowHasData($row) {
     return false;
 }
 
+/**
+ * Create and show dialog for editing params
+ * @param title title of dialog
+ * @param json current params json
+ * @param onSave on save button click callback
+ */
 function showParamsDialog(title, json, onSave) {
     const html = `
         <div class="modal fade" tabindex="-1" role="dialog">
