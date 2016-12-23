@@ -42,7 +42,7 @@ const tableToExcel = (function () {
             })
         };
     return function (table, name, filename) {
-        const ctx = {worksheet: name || 'Worksheet', table: $resultTable.html()};
+        const ctx = {worksheet: name || 'Worksheet', table: $(table).html()};
         document.getElementById("downloadLink").href = uri + base64(format(template, ctx));
         document.getElementById("downloadLink").download = filename;
         document.getElementById("downloadLink").click();

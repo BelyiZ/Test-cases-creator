@@ -15,7 +15,7 @@ let params = {
     "blocks": [{
         "code": "",
         "title": {"text": "", "colspan": 0},
-        "cells": [{"code": "", "colspan": 0, "width": "", "name": "", "inInputs": false, "inResult": false}]
+        "cells": [{"code": "", "colspan": 0, "width": "", "name": "", "inInputs": false, "inResult": false, "isOrderNumber": false}]
     }]
 };
 
@@ -72,7 +72,7 @@ $(document).ready(function () {
     });
 
     $body.on('click', '.js-download-xls', function () {
-        tableToExcel('stepsTable', 'name', 'myfile.xls');
+        tableToExcel($resultTable, 'Книга 1', 'testCases.xls');
     })
 });
 
@@ -183,7 +183,9 @@ function resizeTextArea(element) {
  * @returns {string} cell value or empty string
  */
 function getCellValue($container, code) {
-    return ($container.find(`[data-cell-code="${code}"]`).val() || '').trim();
+    return ($container.find(`[data-cell-code="${code}"]`).val() || '')
+        .trim()
+        .replace(/\n/g, '<br style="mso-data-placement:same-cell;" />');
 }
 
 /**
