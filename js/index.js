@@ -3,77 +3,56 @@
  */
 const $body = $('body');
 
-const $testHeaderRows = $('#testHeaderRows');
-const $preconditionsTable = $('#preconditionsTable');
-const $stepsTable = $('#stepsTable');
-const $postconditionsTable = $('#postconditionsTable');
-
+const $content = $('#content');
+const $resultContent = $('#resultContent');
 const $resultTable = $('#resultTable');
 
-let headerParams = {
-    rows: [
-        {code: 'name', colspan: 2, width: '1%', name: 'Название', inInputs: true, inResult: true},
-        {code: 'code', colspan: 2, width: '1%', name: 'Код', inInputs: true, inResult: true},
-        {code: 'description', colspan: 2, width: '1%', name: 'Описание', inInputs: true, inResult: true},
-    ]
-};
-
-let preconditionsTableParams = {
-    cells: [
-        {code: 'number', colspan: 1, width: '1%', name: '№', isOrderNumber: true, inInputs: false, inResult: true},
-        // {code: 'code', colspan: 1, width: '15%', name: 'Код', inInputs: true, inResult: true},
-        {code: 'name', colspan: '100%', width: '90%', name: 'Описание', inInputs: true, inResult: true}
-    ]
-};
-
-let stepsTableParams = {
-    cells: [
-        {code: 'number', colspan: 1, width: '1%', name: '№', isOrderNumber: true, inInputs: false, inResult: true},
-        {code: 'code', colspan: 1, width: '10%', name: 'Код', inInputs: true, inResult: true},
-        {code: 'name', colspan: 2, width: '30%', name: 'Действие', inInputs: true, inResult: true},
-        {code: 'expected', colspan: 2, width: '30%', name: 'Ожидаемый результат', inInputs: true, inResult: true},
-        {code: 'result', colspan: '100%', width: '', name: 'Фактический результат', inInputs: false, inResult: true}
-    ]
-};
-
-let postconditionsTableParams = {
-    cells: [
-        {code: 'number', colspan: 1, width: '1%', name: '№', isOrderNumber: true, inInputs: false, inResult: true},
-        // {code: 'code', colspan: 1, width: '15%', name: 'Код', inInputs: true, inResult: true},
-        {code: 'name', colspan: '100%', width: '90%', name: 'Описание', inInputs: true, inResult: true}
-    ]
+let params = {
+    "headerParams": {
+        "used": false,
+        "rows": [{"code": "", "colspan": 0, "valueColspan": 0, "width": "", "name": "", "inInputs": false, "inResult": false}]
+    },
+    "blocks": [{
+        "code": "",
+        "title": {"text": "", "colspan": 0},
+        "cells": [{"code": "", "colspan": 0, "width": "", "name": "", "inInputs": false, "inResult": false}]
+    }]
 };
 
 $(document).ready(function () {
-    generateTestHeaderRows();
+    $.getJSON('contentParams.json', function (json) {
+        params = json;
+        $content.html(generatePageContent());
+    });
 
     $body.on('click', '.js-do-magic', function () {
         $resultTable.html('');
 
-        for (const rowParam of headerParams.rows) {
-            if (rowParam.inResult) {
-                $resultTable.append(`
-                    <tr>
-                        <td width="${rowParam.width || ''}" colspan="${rowParam.colspan || ''}"><b>${rowParam.name}:</b></td>
-                        <td colspan="100%">${getCellValue($testHeaderRows, rowParam.code)}</td>
-                    </tr>
-                `);
+        if (params.headerParams.used) {
+            for (const rowParam of params.headerParams.rows) {
+                if (rowParam.inResult) {
+                    $resultTable.append(`
+                        <tr>
+                            <td width="${rowParam.width}" colspan="${rowParam.colspan}"><b>${rowParam.name}:</b></td>
+                            <td colspan="${rowParam.valueColspan}">${getCellValue($('#testHeaderRows'), rowParam.code)}</td>
+                        </tr>
+                    `);
+                }
             }
         }
-
-        if (preconditionsTableParams.cells && preconditionsTableParams.cells.length) {
-            $resultTable.append('<tr><td colspan="100%"><br><b>Предусловия:</b></td></tr>');
-            addItemsToResultTable($preconditionsTable, preconditionsTableParams);
+        for (let block of params.blocks) {
+            addItemsToResultTable(block);
         }
+        $resultContent.show();
+    });
 
-        if (stepsTableParams.cells && stepsTableParams.cells.length) {
-            $resultTable.append('<tr><td colspan="100%"><br><b>Шаги теста:</b></td></tr>');
-            addItemsToResultTable($stepsTable, stepsTableParams);
-        }
-
-        if (postconditionsTableParams.cells && postconditionsTableParams.cells.length) {
-            $resultTable.append('<tr><td colspan="100%"><br><b>Постусловия:</b></td></tr>');
-            addItemsToResultTable($postconditionsTable, postconditionsTableParams);
+    $body.on('click', '.js-add-item', function (e) {
+        const $target = $(e.currentTarget);
+        const blockCode = $target.data('blockCode');
+        for (let blockParams of params.blocks) {
+            if (blockParams.code === blockCode) {
+                appendItem(blockParams);
+            }
         }
     });
 
@@ -85,71 +64,91 @@ $(document).ready(function () {
         resizeTextArea(e.currentTarget);
     });
 
-    $body.on('click', '.js-add-precondition', function () {
-        appendRow($preconditionsTable, preconditionsTableParams);
+    $body.on('click', '.js-settings-button', function () {
+        showParamsDialog('Редактирование параметров', params, function (json) {
+            params = json;
+            $content.html(generatePageContent());
+        })
     });
 
-    $body.on('click', '.js-add-step', function () {
-        appendRow($stepsTable, stepsTableParams);
-    });
-
-    $body.on('click', '.js-add-postcondition', function () {
-        appendRow($postconditionsTable, postconditionsTableParams);
-    });
-
-    $body.on('click', '.js-edit-header-params', function () {
-        showParamsDialog('Редактирование параметров таблицы предусловий', headerParams, function (json) {
-            headerParams = json;
-            generateTestHeaderRows();
-        })
-    });
-    $body.on('click', '.js-edit-preconditions-params', function () {
-        showParamsDialog('Редактирование параметров таблицы предусловий', preconditionsTableParams, function (json) {
-            preconditionsTableParams = json;
-            $preconditionsTable.find('.js-item').remove();
-        })
-    });
-    $body.on('click', '.js-edit-steps-params', function () {
-        showParamsDialog('Редактирование параметров таблицы шагов', stepsTableParams, function (json) {
-            stepsTableParams = json;
-            $stepsTable.find('.js-item').remove();
-        })
-    });
-    $body.on('click', '.js-edit-postconditions-params', function () {
-        showParamsDialog('Редактирование параметров таблицы постусловий', postconditionsTableParams, function (json) {
-            postconditionsTableParams = json;
-            $postconditionsTable.find('.js-item').remove();
-        })
+    $body.on('click', '.js-download-xls', function () {
+        tableToExcel('stepsTable', 'name', 'myfile.xls');
     })
 });
 
 /**
+ * Generate inputs part of page relative to params
+ * @returns {string} generated html
+ */
+function generatePageContent() {
+    let content = '';
+    content += generateTestHeaderRows();
+    for (let blockParams of params.blocks) {
+        content += generateBlockTable(blockParams);
+    }
+    return content;
+}
+
+/**
  * Generate fields for test general information. It will be used in header of result table.
+ * @returns {string} generated html
  */
 function generateTestHeaderRows() {
-    $testHeaderRows.html('');
-    for (const rowParam of headerParams.rows) {
+    let result = `
+        <div>
+            <b>ШАПКА ТАБЛИЦЫ</b>
+        </div>
+        <br>
+        <div id="testHeaderRows">
+    `;
+    for (const rowParam of params.headerParams.rows) {
         if (rowParam.inInputs) {
-            $testHeaderRows.append(`
+            result += `
                 <div class="form-group row">
                     <label class="col-sm-2 col-form-label text-sm-right">${rowParam.name}:</label>
                     <div class="col-sm-10">
                         <input type="text" class="form-control" data-cell-code="${rowParam.code}"/>
                     </div>
                 </div>
-            `);
+            `;
         }
     }
+    return result + '</div>';
+}
+
+/**
+ * Generate content block html
+ * @param blockParams
+ * @returns {string} generated html
+ */
+function generateBlockTable(blockParams) {
+    return `
+        <table class="table">
+            <tbody id="${blockParams.code}">
+                <tr>
+                    <th colspan="100%" class="text-sm-center">${blockParams.title.text.toUpperCase()}</th>
+                </tr>
+            </tbody>
+        </table>
+        <div class="text-sm-right">
+            <button type="button" class="btn btn-secondary margin-bottom-25 js-add-item" 
+                    data-block-code="${blockParams.code}">
+                        <i class="fa fa-plus"></i>
+                        Добавить элемент
+            </button>
+        </div>  
+    `;
 }
 
 /**
  * Add new row with inputs in target table.
- * @param $table table to add row
- * @param params row params
+ * @param blockParams block params
  */
-function appendRow($table, params) {
+function appendItem(blockParams) {
+    const $itemsTable = $(`#${blockParams.code}`);
+
     let rowContent = '';
-    for (const cellParam of params.cells) {
+    for (const cellParam of blockParams.cells) {
         if (cellParam.inInputs) {
             rowContent += `
                 <td width="${cellParam.width || ''}">
@@ -158,7 +157,7 @@ function appendRow($table, params) {
             `;
         }
     }
-    $table.append(`\
+    $itemsTable.append(`\
         <tr class="js-item">
             ${rowContent}\
             <td width="1%"><i class="fa fa-remove clickable remove-icon js-remove-item"></i></td>\
@@ -171,7 +170,10 @@ function appendRow($table, params) {
  * @param element textarea DOM-element
  */
 function resizeTextArea(element) {
+    element.style.height = '5px';
     element.style.height = (element.scrollHeight) + 'px';
+    element.blur();
+    element.focus()
 }
 
 /**
@@ -186,30 +188,39 @@ function getCellValue($container, code) {
 
 /**
  * Add block of items (such as preconditions or steps) into the result table
- * @param $itemsTable source table with item's data
- * @param params inserting params
+ * @param blockParams inserting params
  */
-function addItemsToResultTable($itemsTable, params) {
-    let rowContent = '';
-    for (const cellParam of params.cells) {
-        rowContent += `<td colspan="${cellParam.colspan}" width="${cellParam.width || ''}">${cellParam.name}</td>`
-    }
-    $resultTable.append(`<tr>${rowContent}</tr>`);
+function addItemsToResultTable(blockParams) {
+    const $itemsTable = $(`#${blockParams.code}`);
 
+    // append block title row
+    $resultTable.append(`
+        <tr>
+            <td colspan="${blockParams.title.colspan}">
+                <br>
+                <b>${blockParams.title.text}:</b>
+            </td>
+        </tr>
+    `);
+
+    // append columns titles block
+    let titleRowContent = '';
+    for (const cellParam of blockParams.cells) {
+        titleRowContent += `<td colspan="${cellParam.colspan}" width="${cellParam.width || ''}">${cellParam.name}</td>`
+    }
+    $resultTable.append(`<tr>${titleRowContent}</tr>`);
+
+    // append content
     let rowNum = 1;
     for (const item of $itemsTable.find('.js-item')) {
         const $item = $(item);
         if (checkRowHasData($item)) {
             let rowContent = '';
-            for (const cellParam of params.cells) {
+            for (const cellParam of blockParams.cells) {
                 if (cellParam.inResult) {
-                    if (cellParam.isOrderNumber) {
-                        rowContent += `<td colspan="1" width="1%">${rowNum}</td>`;
-                    } else {
-                        rowContent += `<td colspan="${cellParam.colspan}" width="${cellParam.width || ''}">
-                                           ${getCellValue($item, cellParam.code)}
-                                       </td>`
-                    }
+                    rowContent += `<td colspan="${cellParam.colspan}" width="${cellParam.width}">
+                                       ${cellParam.isOrderNumber ? rowNum : getCellValue($item, cellParam.code)}
+                                   </td>`;
                 }
             }
             $resultTable.append(`<tr>${rowContent}</tr>`);
