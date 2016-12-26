@@ -26,7 +26,7 @@ $(document).ready(function () {
         $resultTable.html('');
 
         if (params.headerParams.used) {
-            for (const rowParam of params.headerParams.rows) {
+            for (let rowParam of params.headerParams.rows) {
                 if (rowParam.inResult) {
                     $resultTable.append(`
                         <tr>
@@ -107,7 +107,7 @@ function generateTestHeaderRows() {
         <br>
         <div id="testHeaderRows">
     `;
-    for (const rowParam of params.headerParams.rows) {
+    for (let rowParam of params.headerParams.rows) {
         if (rowParam.inInputs) {
             result += `
                 <div class="form-group row">
@@ -154,7 +154,7 @@ function appendItem(blockParams) {
     const $itemsTable = $(`#${blockParams.code}`);
 
     let rowContent = '';
-    for (const cellParam of blockParams.cells) {
+    for (let cellParam of blockParams.cells) {
         if (cellParam.inInputs) {
             rowContent += `
                 <td width="${cellParam.width || ''}">
@@ -214,18 +214,18 @@ function addItemsToResultTable(blockParams) {
 
     // append columns titles block
     let titleRowContent = '';
-    for (const cellParam of blockParams.cells) {
+    for (let cellParam of blockParams.cells) {
         titleRowContent += `<td colspan="${cellParam.colspan}" width="${cellParam.width || ''}">${cellParam.name}</td>`
     }
     $resultTable.append(`<tr>${titleRowContent}</tr>`);
 
     // append content
     let rowNum = 1;
-    for (const item of $itemsTable.find('.js-item')) {
+    for (let item of $itemsTable.find('.js-item')) {
         const $item = $(item);
         if (checkRowHasData($item)) {
             let rowContent = '';
-            for (const cellParam of blockParams.cells) {
+            for (let cellParam of blockParams.cells) {
                 if (cellParam.inResult) {
                     rowContent += `<td colspan="${cellParam.colspan}" width="${cellParam.width}">
                                        ${cellParam.isOrderNumber ? rowNum : getCellValue($item, cellParam.code)}
