@@ -66,8 +66,12 @@ $(document).ready(function () {
     });
 
     $body.on('click', '.js-download-xls', function () {
-        tableToExcel($resultTable, 'Книга 1', 'testCases.xls');
-    })
+        convertToFile($resultTable, 'testCases', 'xls');
+    });
+
+    $body.on('click', '.js-download-doc', function () {
+        convertToFile($resultTable, 'testCases', 'doc');
+    });
 });
 
 /**
