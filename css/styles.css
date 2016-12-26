@@ -1,0 +1,48 @@
+td, th {
+    padding: 0 10px 0 5px;
+    vertical-align: top;
+}
+
+textarea {
+    width: 100%;
+    resize: none;
+    overflow: hidden;
+    min-height: 55px;
+}
+
+.remove-icon:hover {
+    color: #696a6b;
+}
+
+.clickable {
+    cursor: pointer;
+}
+
+.draggable {
+    cursor: move; /* fallback if grab cursor is unsupported */
+    cursor: grab;
+    cursor: -moz-grab;
+    cursor: -webkit-grab;
+}
+
+.draggable:active {
+    cursor: grabbing;
+    cursor: -moz-grabbing;
+    cursor: -webkit-grabbing;
+}
+
+.big-icon {
+    font-size: 24px;
+}
+
+.btn + .btn {
+    margin-left: 20px;
+}
+
+.margin-bottom-25 {
+    margin-bottom: 25px;
+}
+
+.margin-top-10 {
+    margin-top: 10px;
+}

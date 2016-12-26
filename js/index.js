@@ -20,10 +20,7 @@ let params = {
 };
 
 $(document).ready(function () {
-    $.getJSON('contentParams.json', function (json) {
-        params = json;
-        $content.html(generatePageContent());
-    });
+    $.getJSON('contentParams.json', applyNewParams);
 
     $body.on('click', '.js-do-magic', function () {
         $resultTable.html('');
@@ -65,16 +62,25 @@ $(document).ready(function () {
     });
 
     $body.on('click', '.js-settings-button', function () {
-        showParamsDialog('Редактирование параметров', params, function (json) {
-            params = json;
-            $content.html(generatePageContent());
-        })
+        showParamsDialog('Редактирование параметров', params, applyNewParams)
     });
 
     $body.on('click', '.js-download-xls', function () {
         tableToExcel($resultTable, 'Книга 1', 'testCases.xls');
     })
 });
+
+/**
+ * Apply new parameter, generate new content and reinit page
+ * @param newParams json with new parame
+ */
+function applyNewParams(newParams) {
+    params = newParams;
+    $content.html(generatePageContent());
+    $('.js-input-data-table').sortable({
+        items: ">.draggable"
+    });
+}
 
 /**
  * Generate inputs part of page relative to params
@@ -124,7 +130,7 @@ function generateTestHeaderRows() {
 function generateBlockTable(blockParams) {
     return `
         <table class="table">
-            <tbody id="${blockParams.code}">
+            <tbody id="${blockParams.code}" class="js-input-data-table">
                 <tr>
                     <th colspan="100%" class="text-sm-center">${blockParams.title.text.toUpperCase()}</th>
                 </tr>
@@ -158,9 +164,10 @@ function appendItem(blockParams) {
         }
     }
     $itemsTable.append(`\
-        <tr class="js-item">
+        <tr class="js-item draggable">
+            <td width="1%"><i class="fa fa-arrows-v big-icon margin-top-10"></i></td>\
             ${rowContent}\
-            <td width="1%"><i class="fa fa-remove clickable remove-icon js-remove-item"></i></td>\
+            <td width="1%"><i class="fa fa-remove clickable big-icon margin-top-10 js-remove-item"></i></td>\
         </tr>\
     `);
 }
