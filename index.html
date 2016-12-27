@@ -32,18 +32,25 @@
 
 <div id="resultContent" style="display: none;">
     <hr class="margin-bottom-25">
-    <div class="text-sm-right margin-bottom-25 ">
-        <button type="button" class="btn btn-info js-download-xls">
-            <i class="fa fa-download"></i>
-            Скачать .xls
-        </button>
-        <button type="button" class="btn btn-info js-download-doc">
-            <i class="fa fa-download"></i>
-            Скачать .doc
-        </button>
-        <a id="downloadLink" style="display:none;"></a>
+    <div class="row margin-bottom-25">
+        <div class="col-md-4 text-sm-left">
+            <button type="button" class="btn btn-info js-save-in-db">
+                <i class="fa fa-database"></i>
+                Сохранить в базе
+            </button>
+        </div>
+        <div class="text-sm-right col-md-8">
+            <button type="button" class="btn btn-info js-download-doc">
+                <i class="fa fa-download"></i>
+                Скачать .doc
+            </button>
+            <button type="button" class="btn btn-info js-download-xls">
+                <i class="fa fa-download"></i>
+                Скачать .xls
+            </button>
+            <a id="downloadLink" style="display:none;"></a>
+        </div>
     </div>
-
     <br><br><br>
     <table class="text-sm-left" border="1" cellspacing="5" width="100%">
         <tbody id="resultTable">
@@ -56,8 +63,13 @@
 <script src="js/jquery-ui-1.12.1.min.js"></script>
 <script src="https://npmcdn.com/tether@1.2.4/dist/js/tether.min.js"></script>
 <script src="js/bootstrap.min.js"></script>
+<script src="js/pouchdb-6.1.0.min.js"></script>
 
+<script src="js/resultTableGenerator.js"></script>
+<script src="js/pageContentGenerator.js"></script>
+<script src="js/paramsDialog.js"></script>
 <script src="js/exportToFile.js"></script>
-<script src="js/index.js"></script>
+<script src="js/script.js"></script>
+
 </body>
 </html>
