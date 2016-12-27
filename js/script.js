@@ -52,8 +52,9 @@
             `);
         },
 
-        rebuildPageContent = function () {
-            $content.html(generatePageContent(currentParams, currentTestCase));
+        rebuildPageContent = function (clean) {
+            $content.html(generatePageContent(currentParams, clean ? '' : currentTestCase));
+            $resultContent.hide();
             for (let blockParams of currentParams.blocks) {
                 if (currentTestCase && currentTestCase.blocksValues && currentTestCase.blocksValues[blockParams.code]) {
                     for (let rowValues of currentTestCase.blocksValues[blockParams.code]) {
@@ -75,7 +76,7 @@
                 .then(function (response) {
                     currentParams = newParams;
                     currentParams._rev = response.rev;
-                    rebuildPageContent(currentParams);
+                    rebuildPageContent(true);
                 })
                 .catch(function (err) {
                     console.log(err);

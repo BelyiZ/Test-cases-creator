@@ -29,7 +29,7 @@ function showParamsDialog(title, json, onSave) {
                         <textarea class="form-control js-params">${JSON.stringify(json, null, 4)}</textarea>
                     </div>
                     <div class="modal-footer">
-                        <div class="btn btn-default" data-dismiss="modal">Отмена</div>
+                        <div class="btn btn-secondary" data-dismiss="modal">Отмена</div>
                         <div class="btn btn-primary js-save-btn">Сохранить</div>
                     </div>
                 </div>
