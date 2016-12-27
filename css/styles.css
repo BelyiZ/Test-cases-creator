@@ -9,6 +9,13 @@ textarea {
     overflow: hidden;
     min-height: 55px;
 }
+@-moz-document url-prefix() {
+    textarea {
+        resize: both;
+        overflow: auto;
+        max-height: 500px;
+    }
+}
 
 .remove-icon:hover {
     color: #696a6b;

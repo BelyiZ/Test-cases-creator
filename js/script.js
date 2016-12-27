@@ -55,10 +55,12 @@
         rebuildPageContent = function (clean) {
             $content.html(generatePageContent(currentParams, clean ? '' : currentTestCase));
             $resultContent.hide();
-            for (let blockParams of currentParams.blocks) {
-                if (currentTestCase && currentTestCase.blocksValues && currentTestCase.blocksValues[blockParams.code]) {
-                    for (let rowValues of currentTestCase.blocksValues[blockParams.code]) {
-                        appendItem(blockParams, rowValues);
+            if (!clean) {
+                for (let blockParams of currentParams.blocks) {
+                    if (currentTestCase && currentTestCase.blocksValues && currentTestCase.blocksValues[blockParams.code]) {
+                        for (let rowValues of currentTestCase.blocksValues[blockParams.code]) {
+                            appendItem(blockParams, rowValues);
+                        }
                     }
                 }
             }
@@ -164,5 +166,5 @@ function resizeTextArea(element) {
     element.style.height = '5px';
     element.style.height = (element.scrollHeight) + 'px';
     element.blur();
-    element.focus()
+    element.focus();
 }
