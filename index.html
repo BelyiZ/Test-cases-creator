@@ -6,7 +6,7 @@
     <link rel="stylesheet" href="css/font-awesome.min.css">
     <link rel="stylesheet" href="css/bootstrap-reboot.min.css">
     <link rel="stylesheet" href="css/bootstrap-flex.min.css">
-    <link rel="stylesheet" href="css/bootstrap-grid.css">
+    <link rel="stylesheet" href="css/bootstrap-grid.min.css">
     <link rel="stylesheet" href="css/bootstrap.min.css">
     <link rel="stylesheet" href="css/styles.css">
 </head>
@@ -35,20 +35,19 @@
     <div class="row margin-bottom-25">
         <div class="col-md-4 text-sm-left">
             <!--<button type="button" class="btn btn-info js-save-in-db">-->
-                <!--<i class="fa fa-database"></i>-->
-                <!--Сохранить в базе-->
+            <!--<i class="fa fa-database"></i>-->
+            <!--Сохранить в базе-->
             <!--</button>-->
         </div>
         <div class="text-sm-right col-md-8">
-            <button type="button" class="btn btn-info js-download-doc">
+            <button type="button" class="btn btn-info js-download-file" data-file-type="DOC">
                 <i class="fa fa-download"></i>
                 Скачать .doc
             </button>
-            <button type="button" class="btn btn-info js-download-xls">
+            <button type="button" class="btn btn-info js-download-file" data-file-type="XLS">
                 <i class="fa fa-download"></i>
                 Скачать .xls
             </button>
-            <a id="downloadLink" style="display:none;"></a>
         </div>
     </div>
     <br><br><br>
@@ -61,15 +60,32 @@
 
 <script src="js/jquery-3.1.1.min.js"></script>
 <script src="js/jquery-ui-1.12.1.min.js"></script>
-<script src="https://npmcdn.com/tether@1.2.4/dist/js/tether.min.js"></script>
+<script src="js/tether.min.js"></script>
 <script src="js/bootstrap.min.js"></script>
 <script src="js/pouchdb-6.1.0.min.js"></script>
 
-<script src="js/resultTableGenerator.js"></script>
-<script src="js/pageContentGenerator.js"></script>
-<script src="js/paramsDialog.js"></script>
-<script src="js/exportToFile.js"></script>
-<script src="js/script.js"></script>
+<script>
+    window.ru = {belyiz: {utils: {}}};
+    window.nodes = {body: $('body')};
+</script>
+<script src="js/ru/belyiz/utils/Package.js"></script>
+<script src="js/ru/belyiz/patterns/Page.js"></script>
+<script src="js/ru/belyiz/patterns/Widget.js"></script>
+<script src="js/ru/belyiz/patterns/Service.js"></script>
+
+<script src="js/ru/belyiz/utils/InputsUtils.js"></script>
+<script src="js/ru/belyiz/utils/TableToFileConverter.js"></script>
+
+<script src="js/ru/belyiz/pages/SettingsModal.js"></script>
+<script src="js/ru/belyiz/services/DatabaseService.js"></script>
+<script src="js/ru/belyiz/widgets/TestCaseInfo.js"></script>
+<script src="js/ru/belyiz/widgets/TestCaseResultTable.js"></script>
+
+<script src="js/ru/belyiz/pages/TestCase.js"></script>
+
+<script>
+    new ru.belyiz.pages.TestCase().initialize();
+</script>
 
 </body>
 </html>
