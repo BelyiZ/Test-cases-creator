@@ -17,6 +17,9 @@
         this.$resultContent = $('#resultContent');
         this.$resultTable = $('#resultTable');
         this.$testCasesListContainer = $('#testCasesListContainer');
+
+        this.$createTestCaseBtn = $('.js-create-button');
+        this.$removeTestCaseBtn = $('.js-remove-test-case');
     };
 
     TestCase.prototype._createWidgets = function () {
@@ -34,6 +37,7 @@
         global.nodes.body.on('click', '.js-download-file', this._events.onDownloadButtonClick.bind(this));
         global.nodes.body.on('click', '.js-save-in-db', this._events.onSaveInDbClick.bind(this));
         global.nodes.body.on('click', '.js-create-button', this._events.onCreateButtonClick.bind(this));
+        global.nodes.body.on('click', '.js-remove-test-case', this._events.onRemoveTestCaseClick.bind(this));
 
         this.settingsModalWidget.on('save', this._events.onSettingsSaved, this);
         this.testCasesListWidget.on('selected', this._events.onTestCaseSelected, this);
@@ -63,6 +67,12 @@
         onCreateButtonClick: function () {
             this.showTestCaseInfo();
             this.testCasesListWidget.resetSelection();
+        },
+
+        onRemoveTestCaseClick: function () {
+            const testCaseData = this.testCaseInfoWidget.getTestCaseData();
+            this.databaseService.removeEntity(testCaseData, () => this.showTestCaseInfo());
+            this.showTestCasesList();
         },
 
         onEditSettingsClick: function () {
@@ -101,8 +111,12 @@
 
         if (id) {
             this.databaseService.getEntity(id, entity => onSuccess.call(this, entity.settings, entity));
+            this.$createTestCaseBtn.show();
+            this.$removeTestCaseBtn.show();
         } else {
             this.databaseService.getSettings(settings => onSuccess.call(this, settings));
+            this.$createTestCaseBtn.hide();
+            this.$removeTestCaseBtn.hide();
         }
     };
 

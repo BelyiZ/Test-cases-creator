@@ -62,7 +62,6 @@
     DatabaseService.prototype.removeEntity = function (data, callback) {
         this.db.remove(data)
             .then((response) => {
-                testCase._rev = response.rev;
                 callback();
             })
             .catch(err => console.log(err));

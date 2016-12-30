@@ -75,3 +75,7 @@ textarea {
 .font-smaller {
     font-size: 90%;
 }
+
+.hidden {
+    display: none;
+}

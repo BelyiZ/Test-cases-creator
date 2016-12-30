@@ -39,24 +39,28 @@
     TestCasesList.prototype.reDraw = function (testCases, currentTestCaseId) {
         this.$container.html('');
 
-        for (let testCase of testCases) {
-            let html = '';
-            for (let rowParam of testCase.settings.headerParams.rows) {
-                html += `
+        if (testCases && testCases.length) {
+            for (let testCase of testCases) {
+                let html = '';
+                for (let rowParam of testCase.settings.headerParams.rows) {
+                    html += `
                     <div class="truncate">
                         <b class="font-smaller">${rowParam.name}:</b> 
                         ${testCase.headerValues[rowParam.code]}
                     </div>
                 `;
-            }
+                }
 
-            const isActive = currentTestCaseId && currentTestCaseId === testCase._id;
-            this.$container.append(`
-                <div class="list-group-item list-group-item-action clickable js-test-case-item ${isActive ? 'active' : ''}"
-                     data-test-case-id="${testCase._id}"
-                     data-test-case-rev="${testCase._rev}"
-                    >${html}</div>
-            `);
+                const isActive = currentTestCaseId && currentTestCaseId === testCase._id;
+                this.$container.append(`
+                    <div class="list-group-item list-group-item-action clickable js-test-case-item ${isActive ? 'active' : ''}"
+                         data-test-case-id="${testCase._id}"
+                         data-test-case-rev="${testCase._rev}"
+                        >${html}</div>
+                `);
+            }
+        } else {
+            this.$container.html(`<div class="alert alert-info">Нет сохраненных тест-кейсов</div>`);
         }
     };
 
