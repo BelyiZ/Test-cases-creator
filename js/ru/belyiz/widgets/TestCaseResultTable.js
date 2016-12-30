@@ -14,22 +14,12 @@
         this.$container = $(setup.container);
     }
 
-    TestCaseResultTable.prototype._bindEvents = function () {
-
-    };
-
-    TestCaseResultTable.prototype._events = {
-
-    };
-
     TestCaseResultTable.prototype.reDraw = function (settings, testCaseData) {
         let html = '';
 
-        if (settings.headerParams.used) {
-            for (let rowParam of settings.headerParams.rows) {
-                if (rowParam.inResult) {
-                    html += this._getHeaderRowHtml(rowParam, testCaseData.headerValues[rowParam.code]);
-                }
+        for (let rowParam of settings.headerParams.rows) {
+            if (rowParam.inResult) {
+                html += this._getHeaderRowHtml(rowParam, testCaseData.headerValues[rowParam.code]);
             }
         }
 
@@ -55,11 +45,11 @@
 
     TestCaseResultTable.prototype._getHeaderRowHtml = function (rowParam, value) {
         return `
-                <tr>
-                    <td width="${rowParam.width}" colspan="${rowParam.colspan}"><b>${rowParam.name}:</b></td>
-                    <td colspan="${rowParam.valueColspan}">${value}</td>
-                </tr>
-            `;
+            <tr>
+                <td width="${rowParam.width}" colspan="${rowParam.colspan}"><b>${rowParam.name}:</b></td>
+                <td colspan="${rowParam.valueColspan}">${value}</td>
+            </tr>
+        `;
     };
 
     TestCaseResultTable.prototype._getBlockTitlesHTML = function (blockParams) {
@@ -69,14 +59,14 @@
         }
 
         return `
-                <tr>
-                    <td colspan="${blockParams.title.colspan}">
-                        <br>
-                        <b>${blockParams.title.text}:</b>
-                    </td>
-                </tr>
-                <tr>${titleRowContent}</tr>
-            `;
+            <tr>
+                <td colspan="${blockParams.title.colspan}">
+                    <br>
+                    <b>${blockParams.title.text}:</b>
+                </td>
+            </tr>
+            <tr>${titleRowContent}</tr>
+        `;
     };
 
 })(window, window.ru.belyiz.patterns.Widget, window.ru.belyiz.utils, window.ru.belyiz.widgets);

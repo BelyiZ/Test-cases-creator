@@ -14,6 +14,8 @@
         this.$container = $(setup.container);
 
         this.settings = {};
+        this.testCaseId = '';
+        this.testCaseRevision = '';
     }
 
     TestCaseInfo.prototype._bindEvents = function () {
@@ -38,12 +40,12 @@
     };
 
     TestCaseInfo.prototype.reDraw = function (settings, testCaseInfo) {
+        this.testCaseId = testCaseInfo && testCaseInfo._id || '';
+        this.testCaseRevision = testCaseInfo && testCaseInfo._rev || '';
         this.settings = settings;
 
         let html = '';
-        if (settings.headerParams.used) {
-            html += this._getHeaderRowsHtml(settings.headerParams, testCaseInfo);
-        }
+        html += this._getHeaderRowsHtml(settings.headerParams, testCaseInfo);
         for (let blockSettings of settings.blocks) {
             const blockValues = testCaseInfo && testCaseInfo.blocksValues && testCaseInfo.blocksValues[blockSettings.code];
             html += this._getBlocksHtml(blockSettings, blockValues);
@@ -57,12 +59,16 @@
     };
 
     TestCaseInfo.prototype.getTestCaseData = function () {
-        let testCaseData = {headerValues: {}, blocksValues: {}};
+        let testCaseData = {
+            _id: this.testCaseId,
+            _rev: this.testCaseRevision,
+            settings: this.settings,
+            headerValues: {},
+            blocksValues: {}
+        };
 
-        if (this.settings.headerParams.used) {
-            for (let rowParam of this.settings.headerParams.rows) {
-                testCaseData.headerValues[rowParam.code] = this._getCellValue(this.$container.find('#testHeaderRows'), rowParam.code);
-            }
+        for (let rowParam of this.settings.headerParams.rows) {
+            testCaseData.headerValues[rowParam.code] = this._getCellValue(this.$container.find('#testHeaderRows'), rowParam.code);
         }
 
         for (let blockSettings of this.settings.blocks) {
@@ -93,7 +99,7 @@
             if (rowParam.inInputs) {
                 rowsHtml += `
                     <div class="form-group row">
-                        <label class="col-sm-2 col-form-label text-sm-right">${rowParam.name}:</label>
+                        <label class="col-sm-2 col-form-label text-xs-right">${rowParam.name}:</label>
                         <di class="col-sm-10">
                             <input type="text" class="form-control" data-cell-code="${rowParam.code}"
                                    value="${testCaseInfo && testCaseInfo.headerValues[rowParam.code] || ''}"/>
@@ -104,7 +110,7 @@
         }
 
         return `
-            <div>
+            <div class="text-sm-center">
                 <b>ШАПКА ТАБЛИЦЫ</b>
             </div>
             <br>

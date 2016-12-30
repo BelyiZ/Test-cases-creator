@@ -9,7 +9,6 @@
 
 /** @namespace window.nodes.body */
 
-/** @namespace settings.headerParams.used */
 /** @namespace settings.headerParams.rows.code */
 /** @namespace settings.headerParams.rows.colspan */
 /** @namespace settings.headerParams.rows.valueColspan */

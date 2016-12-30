@@ -1,3 +1,10 @@
+body {
+    max-width: 1500px;
+    text-align: left;
+    margin: auto;
+    padding-top: 30px;
+}
+
 td, th {
     padding: 0 10px 0 5px;
     vertical-align: top;
@@ -9,6 +16,7 @@ textarea {
     overflow: hidden;
     min-height: 55px;
 }
+
 @-moz-document url-prefix() {
     textarea {
         resize: both;
@@ -46,10 +54,24 @@ textarea {
     margin-left: 20px;
 }
 
+.content-padding {
+    padding: 5px;
+}
+
 .margin-bottom-25 {
     margin-bottom: 25px;
 }
 
 .margin-top-10 {
     margin-top: 10px;
+}
+
+.truncate {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.font-smaller {
+    font-size: 90%;
 }

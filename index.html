@@ -11,51 +11,62 @@
     <link rel="stylesheet" href="css/styles.css">
 </head>
 
-<body class="text-sm-center" style="max-width: 1024px; margin: auto;">
+<body>
 
-<br>
-<br>
-
-<div class="text-sm-right">
-    <button type="button" class="btn btn-secondary js-settings-button">
-        <i class="fa fa-edit js-edit-steps-params"></i>
-        Настроить
-    </button>
+<div class="hidden-sm-down col-md-4 col-lg-3">
+    <div id="testCasesListContainer" class="list-group"></div>
 </div>
-
-<div id="content"></div>
-
-<button type="button" class="btn btn-primary btn-lg margin-bottom-25 js-do-magic">
-    <i class="fa fa-magic"></i>
-    Запустить магию!
-</button>
-
-<div id="resultContent" style="display: none;">
-    <hr class="margin-bottom-25">
-    <div class="row margin-bottom-25">
-        <div class="col-md-4 text-sm-left">
-            <!--<button type="button" class="btn btn-info js-save-in-db">-->
-            <!--<i class="fa fa-database"></i>-->
-            <!--Сохранить в базе-->
-            <!--</button>-->
-        </div>
-        <div class="text-sm-right col-md-8">
-            <button type="button" class="btn btn-info js-download-file" data-file-type="DOC">
-                <i class="fa fa-download"></i>
-                Скачать .doc
+<div class="col-md-8 col-lg-9">
+    <div class="row">
+        <div class="col-md-6 text-sm-left">
+            <button type="button" class="btn btn-outline-primary js-create-button">
+                <i class="fa fa-plus"></i>
+                Создать новый
             </button>
-            <button type="button" class="btn btn-info js-download-file" data-file-type="XLS">
-                <i class="fa fa-download"></i>
-                Скачать .xls
+        </div>
+        <div class="col-md-6 text-sm-right">
+            <button type="button" class="btn btn-outline-warning js-settings-button">
+                <i class="fa fa-edit"></i>
+                Настроить
             </button>
         </div>
     </div>
-    <br><br><br>
-    <table class="text-sm-left" border="1" cellspacing="5" width="100%">
-        <tbody id="resultTable">
-        </tbody>
-    </table>
-    <br><br><br>
+
+    <div id="content"></div>
+
+    <div class="text-xs-center">
+        <button type="button" class="btn btn-primary btn-lg margin-bottom-25 js-do-magic">
+            <i class="fa fa-magic"></i>
+            Запустить магию!
+        </button>
+    </div>
+
+    <div id="resultContent" style="display: none;">
+        <hr class="margin-bottom-25">
+        <div class="row margin-bottom-25">
+            <div class="col-md-4 text-sm-left">
+                <button type="button" class="btn btn-outline-info js-save-in-db">
+                    <i class="fa fa-database"></i>
+                    Сохранить в базе
+                </button>
+            </div>
+            <div class="text-sm-right col-md-8">
+                <button type="button" class="btn btn-outline-info js-download-file" data-file-type="DOC">
+                    <i class="fa fa-download"></i>
+                    Скачать .doc
+                </button>
+                <button type="button" class="btn btn-outline-info js-download-file" data-file-type="XLS">
+                    <i class="fa fa-download"></i>
+                    Скачать .xls
+                </button>
+            </div>
+        </div>
+        <br><br><br>
+        <table class="text-sm-left" border="1" cellspacing="5" width="100%">
+            <tbody id="resultTable"></tbody>
+        </table>
+        <br><br><br>
+    </div>
 </div>
 
 <script src="js/jquery-3.1.1.min.js"></script>
@@ -76,10 +87,12 @@
 <script src="js/ru/belyiz/utils/InputsUtils.js"></script>
 <script src="js/ru/belyiz/utils/TableToFileConverter.js"></script>
 
-<script src="js/ru/belyiz/pages/SettingsModal.js"></script>
 <script src="js/ru/belyiz/services/DatabaseService.js"></script>
+
+<script src="js/ru/belyiz/widgets/SettingsModal.js"></script>
 <script src="js/ru/belyiz/widgets/TestCaseInfo.js"></script>
 <script src="js/ru/belyiz/widgets/TestCaseResultTable.js"></script>
+<script src="js/ru/belyiz/widgets/TestCasesList.js"></script>
 
 <script src="js/ru/belyiz/pages/TestCase.js"></script>
 

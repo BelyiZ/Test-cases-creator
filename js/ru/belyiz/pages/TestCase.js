@@ -8,9 +8,7 @@
     /**
      * @constructor
      */
-    function TestCase(setup) {
-        setup = setup || {};
-
+    function TestCase() {
         this.downloadFileName = 'testCase';
     }
 
@@ -18,40 +16,41 @@
         this.$content = $('#content');
         this.$resultContent = $('#resultContent');
         this.$resultTable = $('#resultTable');
+        this.$testCasesListContainer = $('#testCasesListContainer');
     };
 
     TestCase.prototype._createWidgets = function () {
         this.testCaseInfoWidget = new widgets.TestCaseInfo({container: this.$content}).initialize();
-        this.TestCaseResultTableWidget = new widgets.TestCaseResultTable({container: this.$resultTable}).initialize();
+        this.testCaseResultTableWidget = new widgets.TestCaseResultTable({container: this.$resultTable}).initialize();
+        this.testCasesListWidget = new widgets.TestCasesList({container: this.$testCasesListContainer}).initialize();
         this.settingsModalWidget = new widgets.SettingsModal().initialize();
     };
 
     TestCase.prototype._bindEvents = function () {
-
-    };
-    TestCase.prototype._initServices = function () {
-        this.databaseService = new serices.DatabaseService().initialize(this.showTestCaseInfo.bind(this));
-    };
-
-    TestCase.prototype._ready = function () {
         global.nodes.body.on('click', '.js-do-magic', this._events.onGenerateTableClick.bind(this));
         global.nodes.body.on('keyup', 'textarea', this._events.onTextAreaKeyup.bind(this));
         global.nodes.body.on('keyup paste change', 'textarea,input', () => this.$resultContent.hide());
         global.nodes.body.on('click', '.js-settings-button', this._events.onEditSettingsClick.bind(this));
         global.nodes.body.on('click', '.js-download-file', this._events.onDownloadButtonClick.bind(this));
+        global.nodes.body.on('click', '.js-save-in-db', this._events.onSaveInDbClick.bind(this));
+        global.nodes.body.on('click', '.js-create-button', this._events.onCreateButtonClick.bind(this));
 
         this.settingsModalWidget.on('save', this._events.onSettingsSaved, this);
-        global.nodes.body.on('click', '.js-save-in-db', function () {
-            // db.post(currentTestCase).then(function (response) {
-            //          console.log(JSON.stringify(response));
-            //      });
-        });
+        this.testCasesListWidget.on('selected', this._events.onTestCaseSelected, this);
+    };
+
+    TestCase.prototype._initServices = function () {
+        this.databaseService = new serices.DatabaseService().initialize(this.showTestCaseInfo.bind(this));
+    };
+
+    TestCase.prototype._ready = function () {
+        this.showTestCasesList();
     };
 
     TestCase.prototype._events = {
         onGenerateTableClick: function () {
-            this.databaseService.getSettings((settings) => {
-                this.TestCaseResultTableWidget.reDraw(settings, this.testCaseInfoWidget.getTestCaseData());
+            this.databaseService.getSettings(settings => {
+                this.testCaseResultTableWidget.reDraw(settings, this.testCaseInfoWidget.getTestCaseData());
                 this.$resultContent.slideDown();
             });
         },
@@ -61,26 +60,54 @@
             utils.TableToFileConverter.convert(this.$resultTable, this.downloadFileName, $target.data('fileType'));
         },
 
+        onCreateButtonClick: function () {
+            this.showTestCaseInfo();
+            this.testCasesListWidget.resetSelection();
+        },
+
         onEditSettingsClick: function () {
-            this.databaseService.getSettings((settings) => {
+            this.databaseService.getSettings(settings => {
                 this.settingsModalWidget.show(settings);
             });
         },
 
         onSettingsSaved: function (newSettings) {
-            this.databaseService.saveSettings(newSettings, this.showTestCaseInfo.bind(this));
+            this.databaseService.saveSettings(newSettings, (entity) => this.showTestCaseInfo());
+            this.testCasesListWidget.resetSelection();
         },
 
         onTextAreaKeyup: function (e) {
             utils.InputsUtils.resizeTextArea(e.currentTarget);
+        },
+
+        onSaveInDbClick: function () {
+            const data = this.testCaseInfoWidget.getTestCaseData();
+            this.databaseService.saveEntity(data, response => {
+                this.showTestCaseInfo(response.id);
+                this.showTestCasesList(response.id);
+            });
+        },
+
+        onTestCaseSelected: function (data) {
+            this.showTestCaseInfo(data.id);
         }
     };
 
-    TestCase.prototype.showTestCaseInfo = function (testCaseInfo) {
-        this.databaseService.getSettings((settings) => {
-            this.testCaseInfoWidget.reDraw(settings, testCaseInfo);
+    TestCase.prototype.showTestCaseInfo = function (id) {
+        function onSuccess(settings, values) {
+            this.testCaseInfoWidget.reDraw(settings, values);
             this.$resultContent.slideUp();
-        });
+        }
+
+        if (id) {
+            this.databaseService.getEntity(id, entity => onSuccess.call(this, entity.settings, entity));
+        } else {
+            this.databaseService.getSettings(settings => onSuccess.call(this, settings));
+        }
+    };
+
+    TestCase.prototype.showTestCasesList = function (activeId) {
+        this.databaseService.allTestCases(docs => this.testCasesListWidget.reDraw(docs, activeId));
     };
 
 })(window, window.ru.belyiz.patterns.Page, window.ru.belyiz.utils, window.ru.belyiz.widgets, window.ru.belyiz.services);

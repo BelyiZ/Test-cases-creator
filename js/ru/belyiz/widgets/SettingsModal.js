@@ -8,9 +8,7 @@
     /**
      * @constructor
      */
-    function SettingsModal(setup) {
-        setup = setup || {};
-
+    function SettingsModal() {
         this._eventHandlers = {};
         this._eventNames = {
             save: 'save'
@@ -29,7 +27,11 @@
                     </div>
                     <div class="modal-body">
                         <div class="alert alert-warning" role="alert">
-                            <strong>Внимание!</strong> После сохранения все введенные данные на странице будут удалены.
+                            <strong>Внимание!</strong> После сохранения все введенные данные на странице будут удалены.<br>
+                            Настройки применяются только для новых тест-кейсов. Все сохраненные в базе данных сохранят свою структуру.
+                        </div>
+                        <div class="alert alert-info" role="alert">
+                            Строки указанные в шапке таблицы отображаются в списке тест-кейсов. Оставляйте хотя бы одно поле.
                         </div>
                         <div class="alert alert-info" role="alert">
                             Проверок правильности JSON'a пока никаких нет. Пишите сразу правильно. 
@@ -37,8 +39,8 @@
                         <textarea class="form-control js-settings"></textarea>
                     </div>
                     <div class="modal-footer">
-                        <div class="btn btn-secondary" data-dismiss="modal">Отмена</div>
-                        <div class="btn btn-primary js-save-btn">Сохранить</div>
+                        <div class="btn btn-outline-danger" data-dismiss="modal">Отмена</div>
+                        <div class="btn btn-success js-save-btn">Сохранить</div>
                     </div>
                 </div>
             </div>
@@ -59,7 +61,7 @@
         onSaveClick: function () {
             let settingsJson = JSON.parse(this.$settingsArea.val());
             settingsJson._rev = this.$settingsArea.data('_rev');
-            this.trigger('save', settingsJson);
+            this.trigger(this._eventNames.save, settingsJson);
             this.$modal.modal('hide');
         }
     };
