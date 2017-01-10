@@ -18,12 +18,15 @@
         this.$resultTable = $('#resultTable');
         this.$testCasesListContainer = $('#testCasesListContainer');
 
+        this.$generateResultBtn = $('.js-do-magic');
         this.$createTestCaseBtn = $('.js-create-button');
         this.$removeTestCaseBtn = $('.js-remove-test-case');
+        this.$saveInDatabaseBtn = this.$resultContent.find('.js-save-in-db');
     };
 
     TestCase.prototype._createWidgets = function () {
         this.testCaseInfoWidget = new widgets.TestCaseInfo({container: this.$content}).initialize();
+        this.testsSetWidget = new widgets.TestsSet({container: this.$content}).initialize();
         this.testCaseResultTableWidget = new widgets.TestCaseResultTable({container: this.$resultTable}).initialize();
         this.testCasesListWidget = new widgets.TestCasesList({container: this.$testCasesListContainer}).initialize();
         this.settingsModalWidget = new widgets.SettingsModal().initialize();
@@ -40,7 +43,13 @@
         global.nodes.body.on('click', '.js-remove-test-case', this._events.onRemoveTestCaseClick.bind(this));
 
         this.settingsModalWidget.on('save', this._events.onSettingsSaved, this);
+
         this.testCasesListWidget.on('selected', this._events.onTestCaseSelected, this);
+        this.testCasesListWidget.on('multipleSelected', this._events.onMultipleTestCasesSelected, this);
+        this.testCasesListWidget.on('multipleSelectionModeOn', this._events.multipleSelectionModeOn, this);
+        this.testCasesListWidget.on('multipleSelectionModeOff', this._events.multipleSelectionModeOff, this);
+
+        this.testsSetWidget.on('changed', this._events.onTestsSetChanged, this);
     };
 
     TestCase.prototype._initServices = function () {
@@ -53,10 +62,8 @@
 
     TestCase.prototype._events = {
         onGenerateTableClick: function () {
-            this.databaseService.getSettings(settings => {
-                this.testCaseResultTableWidget.reDraw(settings, this.testCaseInfoWidget.getTestCaseData());
-                this.$resultContent.slideDown();
-            });
+            this.testCaseResultTableWidget.reDraw([this.testCaseInfoWidget.getTestCaseData()]);
+            this.$resultContent.slideDown();
         },
 
         onDownloadButtonClick: function (e) {
@@ -100,6 +107,39 @@
 
         onTestCaseSelected: function (data) {
             this.showTestCaseInfo(data.id);
+        },
+
+        onMultipleTestCasesSelected: function (data) {
+            if (data.ids && data.ids.length) {
+                this.databaseService.allTestCases(data.ids, (docs) => this.testsSetWidget.reDraw(docs));
+            } else {
+                this.testsSetWidget.reDraw();
+            }
+        },
+
+        multipleSelectionModeOn: function () {
+            this.testsSetWidget.reDraw();
+            this.$saveInDatabaseBtn.hide();
+            this.$createTestCaseBtn.hide();
+            this.$removeTestCaseBtn.hide();
+            this.$generateResultBtn.hide();
+        },
+
+        multipleSelectionModeOff: function () {
+            this.showTestCaseInfo();
+            this.$saveInDatabaseBtn.show();
+            this.$generateResultBtn.show();
+        },
+
+        onTestsSetChanged: function (ids) {
+            if (ids && ids.length) {
+                this.databaseService.allTestCases(ids, (docs) => {
+                    this.testCaseResultTableWidget.reDraw(docs);
+                    this.$resultContent.slideDown();
+                });
+            } else {
+                this.$resultContent.slideUp(() => this.testCaseResultTableWidget.reDraw());
+            }
         }
     };
 
@@ -121,7 +161,7 @@
     };
 
     TestCase.prototype.showTestCasesList = function (activeId) {
-        this.databaseService.allTestCases(docs => this.testCasesListWidget.reDraw(docs, activeId));
+        this.databaseService.allTestCases([], docs => this.testCasesListWidget.reDraw(docs, activeId));
     };
 
 })(window, window.ru.belyiz.patterns.Page, window.ru.belyiz.utils, window.ru.belyiz.widgets, window.ru.belyiz.services);

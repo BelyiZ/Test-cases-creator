@@ -14,7 +14,13 @@
 <body>
 
 <div class="hidden-sm-down col-md-4 col-lg-3">
-    <div id="testCasesListContainer" class="list-group"></div>
+    <div id="testCasesListContainer">
+        <button type="button" class="btn btn-outline-primary margin-bottom-15 hidden js-select-some-cases">
+            <i class="fa fa-list-alt"></i>
+            Выбрать несколько готовых
+        </button>
+        <div class="js-test-cases-list list-group"></div>
+    </div>
 </div>
 <div class="col-md-8 col-lg-9">
     <div class="row">
@@ -36,10 +42,10 @@
         </div>
     </div>
 
-    <div id="content"></div>
+    <div id="content" class="margin-top-15"></div>
 
-    <div class="text-xs-center">
-        <button type="button" class="btn btn-primary btn-lg margin-bottom-25 js-do-magic">
+    <div class="text-xs-center margin-bottom-25">
+        <button type="button" class="btn btn-primary btn-lg js-do-magic">
             <i class="fa fa-magic"></i>
             Запустить магию!
         </button>
@@ -97,6 +103,7 @@
 <script src="js/ru/belyiz/widgets/TestCaseInfo.js"></script>
 <script src="js/ru/belyiz/widgets/TestCaseResultTable.js"></script>
 <script src="js/ru/belyiz/widgets/TestCasesList.js"></script>
+<script src="js/ru/belyiz/widgets/TestsSet.js"></script>
 
 <script src="js/ru/belyiz/pages/TestCase.js"></script>
 

@@ -1,0 +1,60 @@
+/** @namespace window.ru.belyiz.widgets.TestsSet */
+
+(function (global, Pattern, utils, widgets) {
+    'use strict';
+    utils.Package.declare('ru.belyiz.widgets.TestsSet', TestsSet);
+    Pattern.extend(TestsSet);
+
+    /**
+     * @constructor
+     */
+    function TestsSet(setup) {
+        setup = setup || {};
+
+        this.$container = $(setup.container);
+        this._eventHandlers = {};
+        this._eventNames = {
+            changed: 'changed'
+        };
+    }
+
+    TestsSet.prototype.reDraw = function (testCases) {
+        this.$container.html('');
+
+        if (testCases && testCases.length) {
+            for (let testCase of testCases) {
+                let html = '';
+                for (let rowParam of testCase.settings.headerParams.rows) {
+                    html += `
+                        <div>
+                            <b class="font-smaller">${rowParam.name}:</b> 
+                            ${testCase.headerValues[rowParam.code]}
+                        </div>
+                    `;
+                }
+
+                this.$container.append(`
+                    <div class="list-group-item draggable js-test-case-item margin-top-10" data-test-case-id="${testCase._id}">
+                         <div class="vertical-top d-inline-block"><i class="fa fa-arrows-v big-icon margin-top-10 margin-right-15"></i></div>
+                         <div class="d-inline-block">${html}</div>
+                    </div>
+                `);
+            }
+
+            this.$container.sortable({
+                items: ">.draggable",
+                update: () => this.trigger(this._eventNames.changed, this._getTestsCasesIds())
+            });
+
+        } else {
+            this.$container.html(`<div class="alert alert-info">Не выбрано ни одного теста</div>`);
+        }
+
+        this.trigger(this._eventNames.changed, this._getTestsCasesIds());
+    };
+
+    TestsSet.prototype._getTestsCasesIds = function () {
+        return $.map(this.$container.find('.js-test-case-item'), (obj) => $(obj).data('testCaseId'));
+    };
+
+})(window, window.ru.belyiz.patterns.Widget, window.ru.belyiz.utils, window.ru.belyiz.widgets);

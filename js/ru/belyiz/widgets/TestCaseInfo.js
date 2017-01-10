@@ -21,7 +21,6 @@
     TestCaseInfo.prototype._bindEvents = function () {
         global.nodes.body.on('click', '.js-add-item', this._events.onAddRowClick.bind(this));
         global.nodes.body.on('click', '.js-remove-item', this._events.onRemoveRowClick.bind(this));
-
     };
 
     TestCaseInfo.prototype._events = {
@@ -81,7 +80,7 @@
                 testCaseData.blocksValues[blockSettings.code][rowNum - 1] = {};
                 if (this._checkRowHasData($item)) {
                     for (let cellParam of blockSettings.cells) {
-                        if (cellParam.inInputs && !cellParam.isOrderNumber && this._checkRowHasData($item)) {
+                        if (cellParam.inInputs && !cellParam.isOrderNumber) {
                             testCaseData.blocksValues[blockSettings.code][rowNum - 1][cellParam.code] = this._getCellValue($item, cellParam.code);
                         }
                     }
@@ -165,9 +164,7 @@
     };
 
     TestCaseInfo.prototype._getCellValue = function ($container, code) {
-        return ($container.find(`[data-cell-code="${code}"]`).val() || '')
-            .trim()
-            .replace(/\n/g, '<br style="mso-data-placement:same-cell;" />');
+        return ($container.find(`[data-cell-code="${code}"]`).val() || '').trim();
     };
 
 

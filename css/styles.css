@@ -62,8 +62,20 @@ textarea {
     margin-bottom: 25px;
 }
 
+.margin-bottom-15 {
+    margin-bottom: 15px;
+}
+
+.margin-right-15 {
+    margin-right: 15px;
+}
+
 .margin-top-10 {
     margin-top: 10px;
+}
+
+.margin-top-15 {
+    margin-top: 15px;
 }
 
 .truncate {
@@ -78,4 +90,21 @@ textarea {
 
 .hidden {
     display: none;
+}
+
+.vertical-top {
+    vertical-align: top;
+}
+
+.vertical-middle {
+    vertical-align: middle;
+}
+
+
+
+
+
+
+.multiple-selection .cases-list-checkbox {
+    display: inline-block;
 }

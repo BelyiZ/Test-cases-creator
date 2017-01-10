@@ -67,13 +67,17 @@
             .catch(err => console.log(err));
     };
 
-    DatabaseService.prototype.allTestCases = function (callback) {
+    DatabaseService.prototype.allTestCases = function (ids, callback) {
+        let queryParams = {include_docs: true};
+        if (ids && ids.length) {
+            queryParams.keys = ids;
+        } else {
+            queryParams.startkey = this.testCaseIdPrefix;
+            queryParams.endkey = this.testCaseIdPrefix + '\uffff';
+        }
+
         this.db
-            .allDocs({
-                include_docs: true,
-                startkey: this.testCaseIdPrefix,
-                endkey: this.testCaseIdPrefix + '\uffff'
-            })
+            .allDocs(queryParams)
             .then(function (result) {
                 let docs = [];
                 for (let row of result.rows) {
