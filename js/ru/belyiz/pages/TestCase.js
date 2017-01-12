@@ -63,7 +63,7 @@
     TestCase.prototype._events = {
         onGenerateTableClick: function () {
             this.testCaseResultTableWidget.reDraw([this.testCaseInfoWidget.getTestCaseData()]);
-            this.$resultContent.slideDown();
+            this.$resultContent.slideDown(100, () => global.nodes.body.animate({scrollTop: this.$resultContent.offset().top}, 500));
         },
 
         onDownloadButtonClick: function (e) {
