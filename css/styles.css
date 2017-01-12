@@ -15,6 +15,7 @@ textarea {
     resize: none;
     overflow: hidden;
     min-height: 55px;
+    color: #000 !important;
 }
 
 @-moz-document url-prefix() {
