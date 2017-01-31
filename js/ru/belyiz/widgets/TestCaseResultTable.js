@@ -11,6 +11,8 @@
     function TestCaseResultTable(setup) {
         setup = setup || {};
 
+        this.useMarkDown = !!setup.useMarkDown;
+
         this.$container = $(setup.container);
         this.brForExcel = '<br style="mso-data-placement:same-cell;" />';
     }
@@ -48,7 +50,12 @@
                 if (this._checkCellsHasDataInResult(blockParams.cells, rowData)) {
                     let rowContent = '';
                     for (let cellParam of blockParams.cells) {
-                        const value = this._brakesForExcelFix(cellParam.isOrderNumber ? rowNum : rowData[cellParam.code]);
+                        let value = (cellParam.isOrderNumber ? rowNum : rowData[cellParam.code]) + '';
+                        if (this.useMarkDown) {
+                            value = utils.TextUtils.markdownToHtml(value);
+                        } else {
+                            value = utils.TextUtils.brakesForExcelFix(value);
+                        }
                         if (cellParam.inResult) {
                             rowContent += `<td colspan="${cellParam.colspan}" width="${cellParam.width}">${value}</td>`;
                         }
@@ -62,7 +69,11 @@
     };
 
     TestCaseResultTable.prototype._getHeaderRowHtml = function (rowParam, value) {
-        value = this._brakesForExcelFix(value);
+        if (this.useMarkDown) {
+            value = utils.TextUtils.markdownToHtml(value);
+        } else {
+            value = utils.TextUtils.brakesForExcelFix(value);
+        }
         return `
             <tr>
                 <td width="${rowParam.width}" colspan="${rowParam.colspan}"><b>${rowParam.name}:</b></td>
@@ -98,11 +109,6 @@
             }
         }
         return false;
-    };
-
-    TestCaseResultTable.prototype._brakesForExcelFix = function (str) {
-        str = str ? str + '' : '';
-        return (str || '').replace(/\n/g, '<br style="mso-data-placement:same-cell;" />');
     };
 
     TestCaseResultTable.prototype._calculateColumnsCount = function (tr) {

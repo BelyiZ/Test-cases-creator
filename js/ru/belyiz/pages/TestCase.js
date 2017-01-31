@@ -53,7 +53,13 @@
     };
 
     TestCase.prototype._initServices = function () {
-        this.databaseService = new serices.DatabaseService().initialize(this.showTestCaseInfo.bind(this));
+        this.databaseService = new serices.DatabaseService().initialize(function () {
+            this.databaseService.getSettings(settings => {
+                this.testCaseResultTableWidget.useMarkDown = !!settings.markdown
+            });
+
+            this.showTestCaseInfo();
+        }.bind(this));
     };
 
     TestCase.prototype._ready = function () {
