@@ -50,7 +50,7 @@
                 if (this._checkCellsHasDataInResult(blockParams.cells, rowData)) {
                     let rowContent = '';
                     for (let cellParam of blockParams.cells) {
-                        let value = (cellParam.isOrderNumber ? rowNum : rowData[cellParam.code]) + '';
+                        let value = (cellParam.isOrderNumber ? rowNum : (rowData[cellParam.code] || '')) + '';
                         if (this.useMarkDown) {
                             value = utils.TextUtils.markdownToHtml(value);
                         } else {
