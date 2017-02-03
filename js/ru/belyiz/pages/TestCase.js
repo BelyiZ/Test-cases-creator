@@ -10,6 +10,8 @@
      */
     function TestCase() {
         this.downloadFileName = 'testCase';
+
+        this.activeTestCaseId = -1;
     }
 
     TestCase.prototype._cacheElements = function () {
@@ -19,8 +21,10 @@
         this.$testCasesListContainer = $('#testCasesListContainer');
 
         this.$generateResultBtn = $('.js-do-magic');
-        this.$createTestCaseBtn = $('.js-create-button');
-        this.$removeTestCaseBtn = $('.js-remove-test-case');
+        this.$manageTestCaseBtnsContainer = $('.js-manage-test-case-buttons');
+        this.$createTestCaseBtn = this.$manageTestCaseBtnsContainer.find('.js-create-button');
+        this.$saveTestCaseChangesBtn = this.$manageTestCaseBtnsContainer.find('.js-save-in-db');
+        this.$removeTestCaseBtn = this.$manageTestCaseBtnsContainer.find('.js-remove-test-case');
         this.$saveInDatabaseBtn = this.$resultContent.find('.js-save-in-db');
     };
 
@@ -53,13 +57,15 @@
     };
 
     TestCase.prototype._initServices = function () {
-        this.databaseService = new serices.DatabaseService().initialize(function () {
+        this.databaseService = new serices.DatabaseService({
+            onDatabaseSynchronized: this._events.onDatabaseSynchronized.bind(this)
+        }).initialize(() => {
             this.databaseService.getSettings(settings => {
                 this.testCaseResultTableWidget.useMarkDown = !!settings.markdown
             });
 
             this.showTestCaseInfo();
-        }.bind(this));
+        });
     };
 
     TestCase.prototype._ready = function () {
@@ -126,8 +132,7 @@
         multipleSelectionModeOn: function () {
             this.testsSetWidget.reDraw();
             this.$saveInDatabaseBtn.hide();
-            this.$createTestCaseBtn.hide();
-            this.$removeTestCaseBtn.hide();
+            this.$manageTestCaseBtnsContainer.hide();
             this.$generateResultBtn.hide();
         },
 
@@ -146,7 +151,25 @@
             } else {
                 this.$resultContent.slideUp(() => this.testCaseResultTableWidget.reDraw());
             }
-        }
+        },
+
+        onDatabaseSynchronized: function () {
+            this.showTestCasesList(this.activeTestCaseId);
+            if (this.activeTestCaseId) {
+                this.databaseService.getEntity(
+                    this.activeTestCaseId,
+                    entity => this.testCaseInfoWidget.showDifference(entity),
+                    err => {
+                        if (err.status === 404 && err.reason === 'deleted') {
+                            this.testCaseInfoWidget.removedOnServer();
+                            this.$removeTestCaseBtn.hide();
+                        } else {
+                            this.databaseService.processError.call(this.databaseService, err)
+                        }
+                    }
+                );
+            }
+        },
     };
 
     TestCase.prototype.showTestCaseInfo = function (id) {
@@ -155,15 +178,16 @@
             this.$resultContent.slideUp();
         }
 
+        this.activeTestCaseId = id || '';
+
         if (id) {
             this.databaseService.getEntity(id, entity => onSuccess.call(this, entity.settings, entity));
-            this.$createTestCaseBtn.show();
             this.$removeTestCaseBtn.show();
         } else {
             this.databaseService.getSettings(settings => onSuccess.call(this, settings));
-            this.$createTestCaseBtn.hide();
             this.$removeTestCaseBtn.hide();
         }
+        this.$manageTestCaseBtnsContainer.show();
     };
 
     TestCase.prototype.showTestCasesList = function (activeId) {

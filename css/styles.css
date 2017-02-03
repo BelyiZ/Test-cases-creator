@@ -67,6 +67,10 @@ textarea {
     margin-bottom: 15px;
 }
 
+.margin-bottom-5 {
+    margin-bottom: 5px;
+}
+
 .margin-right-15 {
     margin-right: 15px;
 }
@@ -79,10 +83,18 @@ textarea {
     margin-top: 15px;
 }
 
+.no-margin {
+    margin: 0 !important;
+}
+
 .truncate {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+}
+
+.multiline {
+    white-space: pre-wrap;
 }
 
 .font-smaller {
@@ -101,11 +113,34 @@ textarea {
     vertical-align: middle;
 }
 
-
-
-
-
+.full-width {
+    width: 100%;
+}
 
 .multiple-selection .cases-list-checkbox {
     display: inline-block;
+}
+
+.card.actual-server-value {
+    margin-bottom: 5px;
+    border-color: #f0ad4e;
+}
+
+.card.actual-server-value .card-header {
+    padding: .2rem .75rem;
+    color: #fff;
+    border-color: #f0ad4e;
+    background-color: #f0ad4e;
+}
+
+.card.actual-server-value .card-block {
+    padding: .2rem .75rem;
+}
+
+.added-row {
+    background-color: rgba(92, 184, 92, 0.25);
+}
+
+.removed-row {
+    background-color: rgba(217, 83, 79, 0.25);
 }

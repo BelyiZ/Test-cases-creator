@@ -16,6 +16,14 @@
         this.settings = {};
         this.testCaseId = '';
         this.testCaseRevision = '';
+
+        this._msgMergeConflict = 'Данные на сервере изменились. ';
+        this._msgServerFieldEmpty = 'Значение этого поля было удалено.';
+        this._msgActualFieldValue = 'Актуальный текст:\n';
+        this._msgAddedRowHint = 'Так выделяются строки, которые были добавлены в серверной версии';
+        this._msgRemovedRowHint = 'Так выделяются строки, которых нет в серверной версии';
+        this._msgRemovedFromServer = 'Редактируемый тест-кейс был удален с сервера. Если сохранить изменения - это будет эквивалентно созданию нового.';
+        this._msgChangedOnServer = 'Редактируемый тест кейс был отредактирован. Все различия между реактируемой версией и актуальной указаны в интерфейсе.';
     }
 
     TestCaseInfo.prototype._bindEvents = function () {
@@ -38,16 +46,19 @@
         }
     };
 
-    TestCaseInfo.prototype.reDraw = function (settings, testCaseInfo) {
+    TestCaseInfo.prototype.reDraw = function (settings, testCaseInfo, serverTestCaseInfo) {
         this.testCaseId = testCaseInfo && testCaseInfo._id || '';
-        this.testCaseRevision = testCaseInfo && testCaseInfo._rev || '';
         this.settings = settings;
 
-        let html = '';
-        html += this._getHeaderRowsHtml(settings.headerParams, testCaseInfo);
+        const serverRevision = serverTestCaseInfo && serverTestCaseInfo._rev || '';
+        const localRevision = testCaseInfo && testCaseInfo._rev || '';
+        this.testCaseRevision = serverRevision || localRevision;
+
+        let html = this._getHeaderRowsHtml(settings.headerParams, testCaseInfo, serverTestCaseInfo);
         for (let blockSettings of settings.blocks) {
-            const blockValues = testCaseInfo && testCaseInfo.blocksValues && testCaseInfo.blocksValues[blockSettings.code];
-            html += this._getBlocksHtml(blockSettings, blockValues);
+            const localBlockValues = testCaseInfo && testCaseInfo.blocksValues && testCaseInfo.blocksValues[blockSettings.code] || false;
+            const serverBlockValues = serverTestCaseInfo && serverTestCaseInfo.blocksValues && serverTestCaseInfo.blocksValues[blockSettings.code] || false;
+            html += this._getBlocksHtml(blockSettings, localBlockValues, serverBlockValues);
         }
 
         this.$container.html(html);
@@ -55,6 +66,27 @@
         $('.js-input-data-table').sortable({
             items: ">.draggable"
         });
+    };
+
+    TestCaseInfo.prototype.showDifference = function (serverTestCaseInfo) {
+        // const localTestCaseInfo = this.getTestCaseData();
+        if (serverTestCaseInfo._rev && serverTestCaseInfo._rev !== this.testCaseRevision) {
+            utils.ShowNotification.static(`
+                ${this._msgChangedOnServer}
+                <div class="added-row text-xs-left content-padding">${this._msgAddedRowHint}</div>
+                <div class="removed-row text-xs-left content-padding">${this._msgRemovedRowHint}</div>
+            `, 'warning');
+
+            this.reDraw(this.settings, this.getTestCaseData(), serverTestCaseInfo);
+        }
+    };
+
+    TestCaseInfo.prototype.removedOnServer = function () {
+        utils.ShowNotification.static(this._msgRemovedFromServer, 'danger');
+        let testCaseData = this.getTestCaseData();
+        testCaseData._id = '';
+        testCaseData._rev = '';
+        this.reDraw(this.settings, testCaseData);
     };
 
     TestCaseInfo.prototype.getTestCaseData = function () {
@@ -92,17 +124,39 @@
         return testCaseData;
     };
 
-    TestCaseInfo.prototype._getHeaderRowsHtml = function (headerParams, testCaseInfo) {
+    /**
+     * Генерирует HTML для полей ввода шапки таблицы
+     *
+     * @param headerParams параметры полей ввода шапки таблицы
+     * @param testCaseInfo данные локально-сохраненного тест-кейса, подставляются в поля ввода
+     * @param serverTestCaseInfo данные серверной версии тест-кейса, используются для отображения разницы, при редактировании не последней версии
+     * @returns {string}
+     * @private
+     */
+    TestCaseInfo.prototype._getHeaderRowsHtml = function (headerParams, testCaseInfo, serverTestCaseInfo) {
+        testCaseInfo = testCaseInfo || {};
+        serverTestCaseInfo = serverTestCaseInfo || {};
+
+        const merge = testCaseInfo._rev && serverTestCaseInfo._rev && testCaseInfo._rev !== this.testCaseRevision;
+
         let rowsHtml = '';
         for (let rowParam of headerParams.rows) {
             if (rowParam.inInputs) {
+                const localValue = testCaseInfo.headerValues && testCaseInfo.headerValues[rowParam.code] || '';
+                const serverValue = serverTestCaseInfo.headerValues && serverTestCaseInfo.headerValues[rowParam.code] || '';
+                const mergeConflict = merge && localValue !== serverValue;
+                const message = this._msgMergeConflict + (serverValue ? this._msgActualFieldValue + serverValue : this._msgServerFieldEmpty);
+
                 rowsHtml += `
-                    <div class="form-group row">
-                        <label class="col-sm-2 col-form-label text-xs-right">${rowParam.name}:</label>
-                        <di class="col-sm-10">
-                            <input type="text" class="form-control" data-cell-code="${rowParam.code}"
-                                   value="${testCaseInfo && testCaseInfo.headerValues[rowParam.code] || ''}"/>
-                        </di>
+                    <div class="form-group row ${mergeConflict ? 'has-warning' : ''}">
+                        <label class="col-sm-2 col-form-label text-xs-right form-control-label" 
+                               for="headerRow-${rowParam.code}">${rowParam.name}:</label>
+                        <div class="col-sm-10">
+                            <input type="text" id="headerRow-${rowParam.code}" data-cell-code="${rowParam.code}"
+                                   class="form-control ${mergeConflict ? 'form-control-warning' : ''}" 
+                                   value="${localValue}"/>
+                            <div class="form-control-feedback multiline">${mergeConflict ? message : ''}</div>
+                        </div>
                     </div>
                 `;
             }
@@ -117,10 +171,16 @@
         `;
     };
 
-    TestCaseInfo.prototype._getBlocksHtml = function (blockSettings, blockValues) {
+    TestCaseInfo.prototype._getBlocksHtml = function (blockSettings, localBlockValues, serverBlockValues) {
+        localBlockValues = localBlockValues || [];
+        serverBlockValues = serverBlockValues || [];
+
         let rowsHtml = '';
-        for (let rowValues of blockValues || []) {
-            rowsHtml += this._getBlockRowHtml(blockSettings, rowValues);
+        const rowsCount = Math.max(localBlockValues.length, serverBlockValues.length);
+        for (let i = 0; i < rowsCount; i++) {
+            const localRowValues = utils.ArraysUtils.getOfDefault(localBlockValues, i, false);
+            const serverRowValues = utils.ArraysUtils.getOfDefault(serverBlockValues, i, false);
+            rowsHtml += this._getBlockRowHtml(blockSettings, localRowValues, serverRowValues, serverBlockValues.length);
         }
 
         return `
@@ -142,20 +202,32 @@
         `;
     };
 
-    TestCaseInfo.prototype._getBlockRowHtml = function (blockSettings, rowValues) {
+    TestCaseInfo.prototype._getBlockRowHtml = function (blockSettings, localRowValues, serverRowValues, merge) {
+        const addedRow = merge && serverRowValues && !localRowValues;
+        const removedRow = merge && !serverRowValues && localRowValues;
+
         let rowContent = '';
         for (let cellParam of blockSettings.cells) {
             if (cellParam.inInputs) {
+                const localValue = localRowValues && localRowValues[cellParam.code] || '';
+                const serverValue = serverRowValues && serverRowValues[cellParam.code] || '';
+                const mergeConflict = !removedRow && !addedRow && merge && localValue !== serverValue;
+                const message = this._msgMergeConflict + (serverValue ? this._msgActualFieldValue + serverValue : this._msgServerFieldEmpty);
+
                 rowContent += `
-                        <td width="${cellParam.width || ''}">
-                            <textarea data-cell-code="${cellParam.code || ''}" class="form-control" 
-                                      placeholder="${cellParam.name || ''}">${rowValues && rowValues[cellParam.code] || ''}</textarea>
-                        </td>
-                    `;
+                    <td width="${cellParam.width || ''}">
+                        <div class="form-group ${mergeConflict ? 'has-warning' : ''}">
+                            <textarea data-cell-code="${cellParam.code || ''}" class="form-control ${mergeConflict ? 'form-control-warning' : ''}" 
+                                      placeholder="${cellParam.name || ''}">${addedRow ? serverValue : localValue}</textarea>
+                            <div class="form-control-feedback multiline">${mergeConflict ? message : ''}</div>
+                        </div>
+                    </td>
+                `;
             }
         }
+
         return `
-            <tr class="js-item draggable">
+            <tr class="js-item draggable ${addedRow ? 'added-row' : ''} ${removedRow ? 'removed-row' : ''}">
                 <td width="1%"><i class="fa fa-arrows-v big-icon margin-top-10"></i></td>
                 ${rowContent}
                 <td width="1%"><i class="fa fa-remove clickable big-icon margin-top-10 js-remove-item"></i></td>
@@ -176,6 +248,5 @@
         }
         return false;
     };
-
 
 })(window, window.ru.belyiz.patterns.Widget, window.ru.belyiz.utils, window.ru.belyiz.widgets);

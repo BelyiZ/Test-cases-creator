@@ -7,18 +7,40 @@
     /**
      * @constructor
      */
-    function DatabaseService() {
+    function DatabaseService(setup) {
+        setup = setup || {};
+
+        this.onDatabaseSynchronized = setup.onDatabaseSynchronized;
+
         this.databaseName = 'testCases';
         this.settingsDocId = 'params';
 
+        this.serverDatabaseUrl = 'http://192.168.130.60:5984/test_cases';
+
         this.testCaseIdPrefix = 'testCase';
+
+        this._msgOptimisticLock = 'Кто-то успел измененить исходные данные, пока ты редактировал(а). Нужно обновиться и только потом сохранить свои изменения.';
+        this._msgUnparsedError = 'Произошла ошибка во время работы с базой данных. Подробности: <br> ';
+        this._msgNonDatabaseError = 'Произошла кое-какая ошибка. Подробности: <br> ';
     }
 
     DatabaseService.prototype._init = function (callback) {
-        this.db = new PouchDB(this.databaseName, {revs_limit: 10});
+        this.localDB = new PouchDB(this.databaseName, {revs_limit: 10});
+        this.remoteDB = new PouchDB(this.serverDatabaseUrl, {revs_limit: 10});
+
+        this.localDB
+            .sync(this.remoteDB, {
+                live: true,
+                retry: true
+            })
+            .on('change', this._onDatabaseSynchronized.bind(this))
+            .on('paused', () => console.debug('Database sync paused.'))
+            .on('active', () => console.debug('Database sync resumed.'))
+            .on('error', (err) => console.error('Database sync error. ' + err));
 
 
-        this.db.get(this.settingsDocId)
+        // проверяем наличие настроек в базе, если их нет - загружаем значения по умолчанию из файла
+        this.localDB.get(this.settingsDocId)
             .then(() => typeof callback === 'function' && callback())
             .catch((err) => {
                 if (err.status === 404) {
@@ -26,48 +48,57 @@
                         this.saveSettings(json, () => typeof callback === 'function' && callback());
                     }.bind(this));
                 } else {
-                    console.log(err);
+                    this.processError(err);
                 }
             });
     };
 
-    DatabaseService.prototype.getSettings = function (callback) {
-        this.getEntity(this.settingsDocId, callback);
+    DatabaseService.prototype._onDatabaseSynchronized = function () {
+        console.debug('Database changes synchronized.');
+        typeof this.onDatabaseSynchronized === 'function' && this.onDatabaseSynchronized();
     };
 
-    DatabaseService.prototype.saveSettings = function (settings, callback) {
-        settings._id = 'params';
-        this.saveEntity(settings, callback);
-    };
-
-    DatabaseService.prototype.getEntity = function (id, callback) {
-        this.db.get(id)
-            .then(callback)
-            .catch((err) => console.log(err));
-    };
-
-    DatabaseService.prototype.saveEntity = function (data, callback) {
-        if (!data._id) {
-            data._id = this.testCaseIdPrefix + this._generateId(data);
+    DatabaseService.prototype.processError = function (err) {
+        if (!err.status) {
+            utils.ShowNotification.error(this._msgNonDatabaseError + err);
+        } else if (err.status === 409) {
+            utils.ShowNotification.error(this._msgOptimisticLock);
+        } else {
+            utils.ShowNotification.error(this._msgUnparsedError + JSON.stringify(err));
         }
-        this.db.put(data)
-            .then((response) => {
-                if (typeof callback === 'function') {
-                    callback(response);
-                }
-            })
-            .catch(err => console.log(err));
+        console.debug(err);
     };
 
-    DatabaseService.prototype.removeEntity = function (data, callback) {
-        this.db.remove(data)
-            .then((response) => {
-                callback();
-            })
-            .catch(err => console.log(err));
+    DatabaseService.prototype.getSettings = function (callback, errorCallback) {
+        this.getEntity(this.settingsDocId, callback, errorCallback);
     };
 
-    DatabaseService.prototype.allTestCases = function (ids, callback) {
+    DatabaseService.prototype.saveSettings = function (settings, callback, errorCallback) {
+        settings._id = this.settingsDocId;
+        this.saveEntity(settings, callback, errorCallback);
+    };
+
+    DatabaseService.prototype.getEntity = function (id, callback, errorCallback) {
+        this.localDB.get(id)
+            .then(callback)
+            .catch(typeof errorCallback === 'function' && errorCallback || this.processError);
+    };
+
+    DatabaseService.prototype.saveEntity = function (data, callback, errorCallback) {
+        data._id = data._id || this.testCaseIdPrefix + this._generateId(data);
+
+        this.localDB.put(data)
+            .then((response) => typeof callback === 'function' && callback(response))
+            .catch(typeof errorCallback === 'function' && errorCallback || this.processError);
+    };
+
+    DatabaseService.prototype.removeEntity = function (data, callback, errorCallback) {
+        this.localDB.remove(data)
+            .then(() => typeof callback === 'function' && callback())
+            .catch(typeof errorCallback === 'function' && errorCallback || this.processError);
+    };
+
+    DatabaseService.prototype.allTestCases = function (ids, callback, errorCallback) {
         let queryParams = {include_docs: true};
         if (ids && ids.length) {
             queryParams.keys = ids;
@@ -76,7 +107,7 @@
             queryParams.endkey = this.testCaseIdPrefix + '\uffff';
         }
 
-        this.db
+        this.localDB
             .allDocs(queryParams)
             .then(function (result) {
                 let docs = [];
@@ -85,7 +116,7 @@
                 }
                 callback(docs);
             })
-            .catch(err => console.log(err));
+            .catch(typeof errorCallback === 'function' && errorCallback || this.processError);
     };
 
     DatabaseService.prototype._generateId = function (data) {

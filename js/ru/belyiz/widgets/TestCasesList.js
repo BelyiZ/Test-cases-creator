@@ -105,7 +105,7 @@
                          data-test-case-id="${testCase._id}"
                          data-test-case-rev="${testCase._rev}">
                          <div class="hidden vertical-top cases-list-checkbox"><i class="fa fa-square-o vertical-middle js-checkbox"/></div>
-                         <div class="d-inline-block">${html}</div>
+                         <div class="d-inline-block full-width">${html}</div>
                     </div>
                 `);
             }

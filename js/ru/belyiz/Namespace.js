@@ -9,6 +9,7 @@
 
 /** @namespace window.nodes.body */
 
+/** @namespace settings.markdown */
 /** @namespace settings.headerParams.rows.code */
 /** @namespace settings.headerParams.rows.colspan */
 /** @namespace settings.headerParams.rows.valueColspan */
