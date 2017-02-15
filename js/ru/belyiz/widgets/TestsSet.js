@@ -12,6 +12,9 @@
         setup = setup || {};
 
         this.$container = $(setup.container);
+
+        this.msgNoOneTestSelected = 'Не выбрано ни одного теста';
+
         this._eventHandlers = {};
         this._eventNames = {
             changed: 'changed'
@@ -47,7 +50,7 @@
             });
 
         } else {
-            this.$container.html(`<div class="alert alert-info">Не выбрано ни одного теста</div>`);
+            this.$container.html(`<div class="alert alert-info">${this.msgNoOneTestSelected}</div>`);
         }
 
         this.trigger(this._eventNames.changed, this._getTestsCasesIds());
