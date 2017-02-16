@@ -51,10 +51,6 @@ textarea {
     font-size: 24px;
 }
 
-.btn + .btn {
-    margin-left: 20px;
-}
-
 .content-padding {
     padding: 5px;
 }
@@ -119,6 +115,15 @@ textarea {
 
 .multiple-selection .cases-list-checkbox {
     display: inline-block;
+    margin-right: 10px;
+}
+
+.multiple-selection .list-group-item-action {
+    padding-left: 10px;
+}
+
+.multiple-selection .list-group-item-action .full-width{
+    width: 90%;
 }
 
 .card.actual-server-value {
@@ -143,4 +148,9 @@ textarea {
 
 .removed-row {
     background-color: rgba(217, 83, 79, 0.25);
+}
+
+.vertical-text {
+    transform: rotate(270deg);
+    transform-origin: left top 0;
 }

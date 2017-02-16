@@ -1,0 +1,44 @@
+@media (max-width: 1199px) {
+    .vertical-menu {
+        display: none;
+        box-shadow: #000 -5px 0 20px 0;
+        padding: 15px;
+        background-color: #f8f8f8;
+        color: #333333;
+        border-right: 1px solid #dfdfdf;
+        min-height: 1px;
+        height: 100%;
+        top: 0;
+        left: 0;
+        position: fixed;
+        z-index: 999;
+        overflow: auto;
+    }
+
+    body {
+        padding-left: 50px;
+    }
+}
+
+@media (min-width: 1200px) {
+    .vertical-menu {
+        display: block !important;
+    }
+    .toggle-vertical-menu-btn {
+        display: none !important;
+    }
+}
+
+.toggle-vertical-menu-btn {
+    position: fixed;
+    top: 200px;
+    left: 0;
+    z-index: 1000;
+    background-color: white;
+    margin-top: 20px;
+    min-width: 200px;
+}
+
+.btn.toggle-vertical-menu-btn + .btn.toggle-vertical-menu-btn {
+    margin-left: 0;
+}

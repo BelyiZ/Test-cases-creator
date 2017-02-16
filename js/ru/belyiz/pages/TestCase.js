@@ -22,8 +22,6 @@
 
         this.$generateResultBtn = $('.js-do-magic');
         this.$manageTestCaseBtnsContainer = $('.js-manage-test-case-buttons');
-        this.$createTestCaseBtn = this.$manageTestCaseBtnsContainer.find('.js-create-button');
-        this.$saveTestCaseChangesBtn = this.$manageTestCaseBtnsContainer.find('.js-save-in-db');
         this.$removeTestCaseBtn = this.$manageTestCaseBtnsContainer.find('.js-remove-test-case');
         this.$saveInDatabaseBtn = this.$resultContent.find('.js-save-in-db');
     };
@@ -34,6 +32,8 @@
         this.testCaseResultTableWidget = new widgets.TestCaseResultTable({container: this.$resultTable}).initialize();
         this.testCasesListWidget = new widgets.TestCasesList({container: this.$testCasesListContainer}).initialize();
         this.settingsModalWidget = new widgets.SettingsModal().initialize();
+
+        this.casesVerticalMenu = new widgets.VerticalMenu({menuId: 'casesListVerticalMenu'}).initialize();
     };
 
     TestCase.prototype._bindEvents = function () {
@@ -118,6 +118,7 @@
         },
 
         onTestCaseSelected: function (data) {
+            this.casesVerticalMenu.hide();
             this.showTestCaseInfo(data.id);
         },
 

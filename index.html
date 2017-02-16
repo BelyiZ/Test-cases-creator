@@ -10,27 +10,38 @@
     <link rel="stylesheet" href="css/bootstrap.min.css">
     <link rel="stylesheet" href="css/styles.css">
     <link rel="stylesheet" href="css/animate.min.css">
+    <link rel="stylesheet" href="css/vertical-menu.css">
 </head>
 
 <body>
 
-<div class="hidden-sm-down col-md-4 col-lg-3">
-    <div id="testCasesListContainer">
-        <button type="button" class="btn btn-outline-primary margin-bottom-15 hidden js-select-some-cases">
-            <i class="fa fa-list-alt"></i>
-            Выбрать несколько готовых
-        </button>
-        <div class="js-test-cases-list list-group"></div>
+<!--VERTICAL MENU START-->
+<div class="btn btn-outline-primary vertical-text toggle-vertical-menu-btn js-hide-vertical-menu hidden offset-xl-3 offset-lg-4 offset-md-5"
+     data-menu-id="casesListVerticalMenu">&uarr; Скрыть список &uarr;</div>
+<div class="btn btn-outline-primary vertical-text toggle-vertical-menu-btn js-show-vertical-menu hidden-xl-up"
+     data-menu-id="casesListVerticalMenu">&darr; Список тест-кейсов &darr;</div>
+
+<div class="row">
+    <div id="casesListVerticalMenu" class="col-xl-3 col-lg-4 col-md-5 vertical-menu">
+        <div id="testCasesListContainer">
+            <button type="button" class="btn btn-outline-primary margin-bottom-15 hidden js-select-some-cases">
+                <i class="fa fa-list-alt"></i>
+                Выбрать несколько готовых
+            </button>
+            <div class="js-test-cases-list list-group"></div>
+        </div>
     </div>
-</div>
-<div class="col-md-8 col-lg-9">
-    <div class="row">
-        <div class="col-md-8 text-sm-left">
-            <div class="js-manage-test-case-buttons">
+<!--VERTICAL MENU END-->
+
+    <div class="col-lg-12 col-xl-9">
+        <div class="btn-toolbar js-manage-test-case-buttons" role="toolbar">
+            <div class="btn-group" role="group">
                 <button type="button" class="btn btn-outline-primary js-create-button">
                     <i class="fa fa-plus"></i>
                     Создать новый
                 </button>
+            </div>
+            <div class="btn-group js-manage-test-case-buttons" role="group">
                 <button type="button" class="btn btn-outline-info js-save-in-db">
                     <i class="fa fa-database"></i>
                     Сохранить изменения
@@ -40,49 +51,49 @@
                     Удалить тест-кейс
                 </button>
             </div>
+            <div class="btn-group ml-5" role="group">
+                <button type="button" class="btn btn-outline-warning js-settings-button">
+                    <i class="fa fa-edit"></i>
+                    Настроить
+                </button>
+            </div>
         </div>
-        <div class="col-md-4 text-sm-right">
-            <button type="button" class="btn btn-outline-warning js-settings-button">
-                <i class="fa fa-edit"></i>
-                Настроить
+
+        <div id="content" class="margin-top-15"></div>
+
+        <div class="text-xs-center margin-bottom-25">
+            <button type="button" class="btn btn-primary btn-lg js-do-magic">
+                <i class="fa fa-magic"></i>
+                Запустить магию!
             </button>
         </div>
-    </div>
 
-    <div id="content" class="margin-top-15"></div>
-
-    <div class="text-xs-center margin-bottom-25">
-        <button type="button" class="btn btn-primary btn-lg js-do-magic">
-            <i class="fa fa-magic"></i>
-            Запустить магию!
-        </button>
-    </div>
-
-    <div id="resultContent" style="display: none;">
-        <hr class="margin-bottom-25">
-        <div class="row margin-bottom-25">
-            <div class="col-md-4 text-sm-left">
-                <button type="button" class="btn btn-outline-info js-save-in-db">
-                    <i class="fa fa-database"></i>
-                    Сохранить в базе
-                </button>
+        <div id="resultContent" style="display: none;">
+            <hr class="margin-bottom-25">
+            <div class="margin-bottom-25 btn-toolbar">
+                <div class="btn-group mr-2">
+                    <button type="button" class="btn btn-outline-info js-save-in-db">
+                        <i class="fa fa-database"></i>
+                        Сохранить в базе
+                    </button>
+                </div>
+                <div class="btn-group">
+                    <button type="button" class="btn btn-outline-info js-download-file" data-file-type="DOC">
+                        <i class="fa fa-download"></i>
+                        Скачать .doc
+                    </button>
+                    <button type="button" class="btn btn-outline-info js-download-file" data-file-type="XLS">
+                        <i class="fa fa-download"></i>
+                        Скачать .xls
+                    </button>
+                </div>
             </div>
-            <div class="text-sm-right col-md-8">
-                <button type="button" class="btn btn-outline-info js-download-file" data-file-type="DOC">
-                    <i class="fa fa-download"></i>
-                    Скачать .doc
-                </button>
-                <button type="button" class="btn btn-outline-info js-download-file" data-file-type="XLS">
-                    <i class="fa fa-download"></i>
-                    Скачать .xls
-                </button>
-            </div>
+            <br><br><br>
+            <table class="text-sm-left" border="1" cellspacing="5" width="100%">
+                <tbody id="resultTable"></tbody>
+            </table>
+            <br><br><br>
         </div>
-        <br><br><br>
-        <table class="text-sm-left" border="1" cellspacing="5" width="100%">
-            <tbody id="resultTable"></tbody>
-        </table>
-        <br><br><br>
     </div>
 </div>
 
@@ -116,6 +127,7 @@
 <script src="js/ru/belyiz/widgets/TestCaseResultTable.js"></script>
 <script src="js/ru/belyiz/widgets/TestCasesList.js"></script>
 <script src="js/ru/belyiz/widgets/TestsSet.js"></script>
+<script src="js/ru/belyiz/widgets/VerticalMenu.js"></script>
 
 <script src="js/ru/belyiz/pages/TestCase.js"></script>
 
