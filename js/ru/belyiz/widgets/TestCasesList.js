@@ -92,8 +92,8 @@
                 let html = '';
                 for (let rowParam of testCase.settings.headerParams.rows) {
                     html += `
-                        <div class="truncate">
-                            <b class="font-smaller">${rowParam.name}:</b> 
+                        <div class="text-truncate">
+                            <small><b>${rowParam.name}:</b></small> 
                             ${testCase.headerValues[rowParam.code]}
                         </div>
                     `;
@@ -101,10 +101,10 @@
 
                 const isActive = currentTestCaseId && currentTestCaseId === testCase._id;
                 this.$listContainer.append(`
-                    <div class="list-group-item list-group-item-action clickable js-test-case-item ${isActive ? 'active' : ''}"
+                    <div class="list-group-item list-group-item-action js-test-case-item ${isActive ? 'active' : ''}" role="button"
                          data-test-case-id="${testCase._id}"
                          data-test-case-rev="${testCase._rev}">
-                         <div class="hidden vertical-top cases-list-checkbox"><i class="fa fa-square-o vertical-middle js-checkbox"/></div>
+                         <div class="collapse align-top cases-list-checkbox"><i class="fa fa-square-o align-middle js-checkbox"/></div>
                          <div class="d-inline-block full-width">${html}</div>
                     </div>
                 `);

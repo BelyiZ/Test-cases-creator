@@ -15,10 +15,16 @@
      * @param textarea textarea DOM-element
      */
     InputsUtils.prototype.resizeTextArea = function (textarea) {
-        textarea.style.height = '5px';
-        textarea.style.height = (textarea.scrollHeight) + 'px';
+        this._calculateTextAreaHeight(textarea);
         textarea.blur();
         textarea.focus();
+    };
+
+    /**
+     * Calculate text areas height by included content
+     */
+    InputsUtils.prototype.resizeTextAreas = function () {
+        $('textarea').each((i, textarea) => this._calculateTextAreaHeight(textarea));
     };
 
     InputsUtils.prototype.selectRange = function (element, start, end) {
@@ -37,6 +43,11 @@
             range.moveStart('character', start);
             range.select();
         }
+    };
+
+    InputsUtils.prototype._calculateTextAreaHeight = function (textarea) {
+        textarea.style.height = '5px';
+        textarea.style.height = (textarea.scrollHeight) + 'px';
     };
 
 })(window, window.ru.belyiz.utils);

@@ -66,6 +66,8 @@
         $('.js-input-data-table').sortable({
             items: ">.draggable"
         });
+
+        utils.InputsUtils.resizeTextAreas();
     };
 
     TestCaseInfo.prototype.showDifference = function (serverTestCaseInfo) {
@@ -73,8 +75,8 @@
         if (serverTestCaseInfo._rev && serverTestCaseInfo._rev !== this.testCaseRevision) {
             utils.ShowNotification.static(`
                 ${this._msgChangedOnServer}
-                <div class="added-row text-xs-left content-padding">${this._msgAddedRowHint}</div>
-                <div class="removed-row text-xs-left content-padding">${this._msgRemovedRowHint}</div>
+                <div class="added-row text-xs-left p-1">${this._msgAddedRowHint}</div>
+                <div class="removed-row text-xs-left p-1">${this._msgRemovedRowHint}</div>
             `, 'warning');
 
             this.reDraw(this.settings, this.getTestCaseData(), serverTestCaseInfo);
@@ -193,7 +195,7 @@
                 </tbody>
             </table>
             <div class="text-sm-right">
-                <button type="button" class="btn btn-secondary margin-bottom-25 js-add-item" 
+                <button type="button" class="btn btn-secondary mb-4 js-add-item" 
                         data-block-code="${blockSettings.code}">
                             <i class="fa fa-plus"></i>
                             Добавить элемент
@@ -228,9 +230,9 @@
 
         return `
             <tr class="js-item draggable ${addedRow ? 'added-row' : ''} ${removedRow ? 'removed-row' : ''}">
-                <td width="1%"><i class="fa fa-arrows-v big-icon margin-top-10"></i></td>
+                <td width="1%"><i class="fa fa-arrows-v big-icon mt-2"></i></td>
                 ${rowContent}
-                <td width="1%"><i class="fa fa-remove clickable big-icon margin-top-10 js-remove-item"></i></td>
+                <td width="1%"><i class="fa fa-remove big-icon mt-2 js-remove-item" role="button"></i></td>
             </tr>
         `;
     };

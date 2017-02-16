@@ -30,15 +30,15 @@
                 for (let rowParam of testCase.settings.headerParams.rows) {
                     html += `
                         <div>
-                            <b class="font-smaller">${rowParam.name}:</b> 
+                            <small><b>${rowParam.name}:</b></small>
                             ${testCase.headerValues[rowParam.code]}
                         </div>
                     `;
                 }
 
                 this.$container.append(`
-                    <div class="list-group-item draggable js-test-case-item margin-top-10" data-test-case-id="${testCase._id}">
-                         <div class="vertical-top d-inline-block"><i class="fa fa-arrows-v big-icon margin-top-10 margin-right-15"></i></div>
+                    <div class="list-group-item draggable js-test-case-item mt-2" data-test-case-id="${testCase._id}">
+                         <div class="align-top d-inline-block"><i class="fa fa-arrows-v big-icon mt-2 mr-3"></i></div>
                          <div class="d-inline-block">${html}</div>
                     </div>
                 `);

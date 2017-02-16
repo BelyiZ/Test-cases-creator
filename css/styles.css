@@ -1,8 +1,5 @@
 body {
     max-width: 1500px;
-    text-align: left;
-    margin: auto;
-    padding-top: 30px;
 }
 
 td, th {
@@ -26,14 +23,6 @@ textarea {
     }
 }
 
-.remove-icon:hover {
-    color: #696a6b;
-}
-
-.clickable {
-    cursor: pointer;
-}
-
 .draggable {
     cursor: move; /* fallback if grab cursor is unsupported */
     cursor: grab;
@@ -51,62 +40,8 @@ textarea {
     font-size: 24px;
 }
 
-.content-padding {
-    padding: 5px;
-}
-
-.margin-bottom-25 {
-    margin-bottom: 25px;
-}
-
-.margin-bottom-15 {
-    margin-bottom: 15px;
-}
-
-.margin-bottom-5 {
-    margin-bottom: 5px;
-}
-
-.margin-right-15 {
-    margin-right: 15px;
-}
-
-.margin-top-10 {
-    margin-top: 10px;
-}
-
-.margin-top-15 {
-    margin-top: 15px;
-}
-
-.no-margin {
-    margin: 0 !important;
-}
-
-.truncate {
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
 .multiline {
     white-space: pre-wrap;
-}
-
-.font-smaller {
-    font-size: 90%;
-}
-
-.hidden {
-    display: none;
-}
-
-.vertical-top {
-    vertical-align: top;
-}
-
-.vertical-middle {
-    vertical-align: middle;
 }
 
 .full-width {
@@ -115,31 +50,31 @@ textarea {
 
 .multiple-selection .cases-list-checkbox {
     display: inline-block;
-    margin-right: 10px;
+    margin-right: .5rem;
 }
 
 .multiple-selection .list-group-item-action {
-    padding-left: 10px;
+    padding-left: .5rem;
 }
 
-.multiple-selection .list-group-item-action .full-width{
+.multiple-selection .list-group-item-action .full-width {
     width: 90%;
 }
 
 .card.actual-server-value {
-    margin-bottom: 5px;
+    margin-bottom: .25rem;
     border-color: #f0ad4e;
 }
 
 .card.actual-server-value .card-header {
-    padding: .2rem .75rem;
+    padding: .25rem .75rem;
     color: #fff;
     border-color: #f0ad4e;
     background-color: #f0ad4e;
 }
 
 .card.actual-server-value .card-block {
-    padding: .2rem .75rem;
+    padding: .25rem .75rem;
 }
 
 .added-row {

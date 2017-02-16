@@ -13,10 +13,10 @@
     <link rel="stylesheet" href="css/vertical-menu.css">
 </head>
 
-<body>
+<body class="text-left pt-5 m-auto">
 
 <!--VERTICAL MENU START-->
-<div class="btn btn-outline-primary vertical-text toggle-vertical-menu-btn js-hide-vertical-menu hidden offset-xl-3 offset-lg-4 offset-md-5"
+<div class="btn btn-outline-primary vertical-text toggle-vertical-menu-btn js-hide-vertical-menu collapse offset-xl-3 offset-lg-4 offset-md-5"
      data-menu-id="casesListVerticalMenu">&uarr; Скрыть список &uarr;</div>
 <div class="btn btn-outline-primary vertical-text toggle-vertical-menu-btn js-show-vertical-menu hidden-xl-up"
      data-menu-id="casesListVerticalMenu">&darr; Список тест-кейсов &darr;</div>
@@ -24,7 +24,7 @@
 <div class="row">
     <div id="casesListVerticalMenu" class="col-xl-3 col-lg-4 col-md-5 vertical-menu">
         <div id="testCasesListContainer">
-            <button type="button" class="btn btn-outline-primary margin-bottom-15 hidden js-select-some-cases">
+            <button type="button" class="btn btn-outline-primary mb-3 collapse js-select-some-cases">
                 <i class="fa fa-list-alt"></i>
                 Выбрать несколько готовых
             </button>
@@ -46,7 +46,7 @@
                     <i class="fa fa-database"></i>
                     Сохранить изменения
                 </button>
-                <button type="button" class="btn btn-outline-danger js-remove-test-case hidden">
+                <button type="button" class="btn btn-outline-danger js-remove-test-case collapse">
                     <i class="fa fa-remove"></i>
                     Удалить тест-кейс
                 </button>
@@ -59,9 +59,9 @@
             </div>
         </div>
 
-        <div id="content" class="margin-top-15"></div>
+        <div id="content" class="mt-3"></div>
 
-        <div class="text-xs-center margin-bottom-25">
+        <div class="text-xs-center mb-4">
             <button type="button" class="btn btn-primary btn-lg js-do-magic">
                 <i class="fa fa-magic"></i>
                 Запустить магию!
@@ -69,8 +69,8 @@
         </div>
 
         <div id="resultContent" style="display: none;">
-            <hr class="margin-bottom-25">
-            <div class="margin-bottom-25 btn-toolbar">
+            <hr class="mb-4">
+            <div class="mb-4 btn-toolbar">
                 <div class="btn-group mr-2">
                     <button type="button" class="btn btn-outline-info js-save-in-db">
                         <i class="fa fa-database"></i>
