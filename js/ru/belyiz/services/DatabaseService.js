@@ -48,7 +48,7 @@
                         this.saveSettings(json, () => typeof callback === 'function' && callback());
                     }.bind(this));
                 } else {
-                    this.processError(err);
+                    this.processError.call(this, err);
                 }
             });
     };
@@ -81,7 +81,7 @@
     DatabaseService.prototype.getEntity = function (id, callback, errorCallback) {
         this.localDB.get(id)
             .then(callback)
-            .catch(typeof errorCallback === 'function' && errorCallback || this.processError);
+            .catch(typeof errorCallback === 'function' && errorCallback || this.processError.bind(this));
     };
 
     DatabaseService.prototype.saveEntity = function (data, callback, errorCallback) {
@@ -89,13 +89,13 @@
 
         this.localDB.put(data)
             .then((response) => typeof callback === 'function' && callback(response))
-            .catch(typeof errorCallback === 'function' && errorCallback || this.processError);
+            .catch(typeof errorCallback === 'function' && errorCallback || this.processError.bind(this));
     };
 
     DatabaseService.prototype.removeEntity = function (data, callback, errorCallback) {
         this.localDB.remove(data)
             .then(() => typeof callback === 'function' && callback())
-            .catch(typeof errorCallback === 'function' && errorCallback || this.processError);
+            .catch(typeof errorCallback === 'function' && errorCallback || this.processError.bind(this));
     };
 
     DatabaseService.prototype.allTestCases = function (ids, callback, errorCallback) {
@@ -116,7 +116,7 @@
                 }
                 callback(docs);
             })
-            .catch(typeof errorCallback === 'function' && errorCallback || this.processError);
+            .catch(typeof errorCallback === 'function' && errorCallback || this.processError.bind(this));
     };
 
     DatabaseService.prototype._generateId = function (data) {
