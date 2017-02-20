@@ -21,6 +21,21 @@
         }, {
             type: type + ' alert-dismissible',
             delay: autoclosable ? 5000 : 0,
+            z_index: 1050,
+            template: '\
+                <div data-notify="container" class="col-xs-11 col-sm-4 alert alert-{0}" role="alert">\
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">\
+                        <span aria-hidden="true">&times;</span>\
+                    </button>\
+                    <span data-notify="icon"></span>\
+                    <span data-notify="title">{1}</span>\
+                    <span data-notify="message" class="d-block pr-4">{2}</span>\
+                    <div class="progress" data-notify="progressbar">\
+                        <div class="progress-bar progress-bar-{0}" role="progressbar" \
+                             aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0;"></div>\
+                    </div>\
+                    <a href="{3}" target="{4}" data-notify="url"></a>\
+                </div>',
         });
     };
 

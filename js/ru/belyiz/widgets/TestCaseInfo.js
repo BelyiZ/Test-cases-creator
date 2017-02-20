@@ -1,6 +1,6 @@
 /** @namespace window.ru.belyiz.widgets.TestCaseInfo */
 
-(function (global, Pattern, utils, widgets) {
+(function (global, Pattern, utils) {
     'use strict';
     utils.Package.declare('ru.belyiz.widgets.TestCaseInfo', TestCaseInfo);
     Pattern.extend(TestCaseInfo);
@@ -75,8 +75,8 @@
         if (serverTestCaseInfo._rev && serverTestCaseInfo._rev !== this.testCaseRevision) {
             utils.ShowNotification.static(`
                 ${this._msgChangedOnServer}
-                <div class="added-row text-xs-left p-1">${this._msgAddedRowHint}</div>
-                <div class="removed-row text-xs-left p-1">${this._msgRemovedRowHint}</div>
+                <div class="added-row text-left p-1">${this._msgAddedRowHint}</div>
+                <div class="removed-row text-left p-1">${this._msgRemovedRowHint}</div>
             `, 'warning');
 
             this.reDraw(this.settings, this.getTestCaseData(), serverTestCaseInfo);
@@ -151,7 +151,7 @@
 
                 rowsHtml += `
                     <div class="form-group row ${mergeConflict ? 'has-warning' : ''}">
-                        <label class="col-sm-2 col-form-label text-xs-right form-control-label" 
+                        <label class="col-sm-2 col-form-label text-right form-control-label" 
                                for="headerRow-${rowParam.code}">${rowParam.name}:</label>
                         <div class="col-sm-10">
                             <input type="text" id="headerRow-${rowParam.code}" data-cell-code="${rowParam.code}"
@@ -165,7 +165,7 @@
         }
 
         return `
-            <div class="text-sm-center">
+            <div class="text-center">
                 <b>ШАПКА ТАБЛИЦЫ</b>
             </div>
             <br>
@@ -189,12 +189,12 @@
             <table class="table">
                 <tbody id="${blockSettings.code}" class="js-input-data-table">
                     <tr>
-                        <th colspan="100%" class="text-sm-center">${blockSettings.title.text.toUpperCase()}</th>
+                        <th colspan="100%" class="text-center">${blockSettings.title.text.toUpperCase()}</th>
                     </tr>
                     ${rowsHtml}
                 </tbody>
             </table>
-            <div class="text-sm-right">
+            <div class="text-right">
                 <button type="button" class="btn btn-secondary mb-4 js-add-item" 
                         data-block-code="${blockSettings.code}">
                             <i class="fa fa-plus"></i>
@@ -251,4 +251,4 @@
         return false;
     };
 
-})(window, window.ru.belyiz.patterns.Widget, window.ru.belyiz.utils, window.ru.belyiz.widgets);
+})(window, window.ru.belyiz.patterns.Widget, window.ru.belyiz.utils);

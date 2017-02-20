@@ -24,6 +24,7 @@
         this.$manageTestCaseBtnsContainer = $('.js-manage-test-case-buttons');
         this.$removeTestCaseBtn = this.$manageTestCaseBtnsContainer.find('.js-remove-test-case');
         this.$saveInDatabaseBtn = this.$resultContent.find('.js-save-in-db');
+        this.$localDbBadge = $('.js-local-db-badge');
     };
 
     TestCase.prototype._createWidgets = function () {
@@ -41,6 +42,7 @@
         global.nodes.body.on('keyup', 'textarea', this._events.onTextAreaKeyup.bind(this));
         global.nodes.body.on('keyup paste change', 'textarea,input', () => this.$resultContent.hide());
         global.nodes.body.on('click', '.js-settings-button', this._events.onEditSettingsClick.bind(this));
+        global.nodes.body.on('click', '.js-change-db-button', this._events.onChangeDbClick.bind(this));
         global.nodes.body.on('click', '.js-download-file', this._events.onDownloadButtonClick.bind(this));
         global.nodes.body.on('click', '.js-save-in-db', this._events.onSaveInDbClick.bind(this));
         global.nodes.body.on('click', '.js-create-button', this._events.onCreateButtonClick.bind(this));
@@ -59,17 +61,12 @@
     TestCase.prototype._initServices = function () {
         this.databaseService = new serices.DatabaseService({
             onDatabaseSynchronized: this._events.onDatabaseSynchronized.bind(this)
-        }).initialize(() => {
-            this.databaseService.getSettings(settings => {
-                this.testCaseResultTableWidget.useMarkDown = !!settings.markdown
-            });
+        }).initialize();
 
-            this.showTestCaseInfo();
-        });
+        this.databaseService.on('dataBaseChanged', this._events.onDatabaseChanged, this);
     };
 
     TestCase.prototype._ready = function () {
-        this.showTestCasesList();
     };
 
     TestCase.prototype._events = {
@@ -98,6 +95,10 @@
             this.databaseService.getSettings(settings => {
                 this.settingsModalWidget.show(settings);
             });
+        },
+
+        onChangeDbClick: function () {
+            this.databaseService.showDbChoosingDialog();
         },
 
         onSettingsSaved: function (newSettings) {
@@ -170,6 +171,15 @@
                     }
                 );
             }
+        },
+
+        onDatabaseChanged: function (data) {
+            this.databaseService.getSettings(settings => {
+                this.testCaseResultTableWidget.useMarkDown = !!settings.markdown
+            });
+            this.showTestCasesList();
+            this.showTestCaseInfo();
+            this.$localDbBadge.toggle(!!data.local);
         },
     };
 
