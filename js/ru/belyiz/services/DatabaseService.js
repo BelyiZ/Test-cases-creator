@@ -48,7 +48,7 @@
                     if (!doc.local) {
                         this._initSync(doc.name);
                     }
-                    this.trigger(this._eventNames.dataBaseChanged, {local: !!doc.local});
+                    this.trigger(this._eventNames.dataBaseChanged, {local: !!doc.local, name: doc.name});
                 } else {
                     this.showDbChoosingDialog();
                 }

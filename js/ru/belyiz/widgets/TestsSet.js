@@ -48,9 +48,8 @@
                 items: ">.draggable",
                 update: () => this.trigger(this._eventNames.changed, this._getTestsCasesIds())
             });
-
         } else {
-            this.$container.html(`<div class="alert alert-info">${this.msgNoOneTestSelected}</div>`);
+            this.$container.html(`<div class="alert alert-info mt-2">${this.msgNoOneTestSelected}</div>`);
         }
 
         this.trigger(this._eventNames.changed, this._getTestsCasesIds());

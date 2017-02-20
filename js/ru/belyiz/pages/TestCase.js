@@ -23,6 +23,7 @@
         this.$removeTestCaseBtn = this.$manageTestCaseBtnsContainer.find('.js-remove-test-case');
         this.$saveInDatabaseBtn = $('.js-save-in-db');
         this.$localDbBadge = $('.js-local-db-badge');
+        this.$currentDbNameBadge = $('.js-current-db');
     };
 
     TestCase.prototype._createWidgets = function () {
@@ -174,6 +175,7 @@
             this.showTestCasesList();
             this.showTestCaseInfo();
             this.$localDbBadge.toggle(!!data.local);
+            this.$currentDbNameBadge.text(data.local ? 'Локальная' : data.name)
         },
     };
 
