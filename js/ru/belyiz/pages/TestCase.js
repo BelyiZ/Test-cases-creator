@@ -16,14 +16,12 @@
 
     TestCase.prototype._cacheElements = function () {
         this.$content = $('#content');
-        this.$resultContent = $('#resultContent');
         this.$resultTable = $('#resultTable');
         this.$testCasesListContainer = $('#testCasesListContainer');
 
-        this.$generateResultBtn = $('.js-do-magic');
         this.$manageTestCaseBtnsContainer = $('.js-manage-test-case-buttons');
         this.$removeTestCaseBtn = this.$manageTestCaseBtnsContainer.find('.js-remove-test-case');
-        this.$saveInDatabaseBtn = this.$resultContent.find('.js-save-in-db');
+        this.$saveInDatabaseBtn = $('.js-save-in-db');
         this.$localDbBadge = $('.js-local-db-badge');
     };
 
@@ -38,9 +36,7 @@
     };
 
     TestCase.prototype._bindEvents = function () {
-        global.nodes.body.on('click', '.js-do-magic', this._events.onGenerateTableClick.bind(this));
         global.nodes.body.on('keyup', 'textarea', this._events.onTextAreaKeyup.bind(this));
-        global.nodes.body.on('keyup paste change', 'textarea,input', () => this.$resultContent.hide());
         global.nodes.body.on('click', '.js-settings-button', this._events.onEditSettingsClick.bind(this));
         global.nodes.body.on('click', '.js-change-db-button', this._events.onChangeDbClick.bind(this));
         global.nodes.body.on('click', '.js-download-file', this._events.onDownloadButtonClick.bind(this));
@@ -56,6 +52,8 @@
         this.testCasesListWidget.on('multipleSelectionModeOff', this._events.multipleSelectionModeOff, this);
 
         this.testsSetWidget.on('changed', this._events.onTestsSetChanged, this);
+
+        this.testCaseInfoWidget.on('changed', this._events.onTestCaseDataChanged, this);
     };
 
     TestCase.prototype._initServices = function () {
@@ -70,9 +68,8 @@
     };
 
     TestCase.prototype._events = {
-        onGenerateTableClick: function () {
+        onTestCaseDataChanged: function () {
             this.testCaseResultTableWidget.reDraw([this.testCaseInfoWidget.getTestCaseData()]);
-            this.$resultContent.slideDown(100, () => global.nodes.body.animate({scrollTop: this.$resultContent.offset().top}, 500));
         },
 
         onDownloadButtonClick: function (e) {
@@ -135,23 +132,20 @@
             this.testsSetWidget.reDraw();
             this.$saveInDatabaseBtn.hide();
             this.$manageTestCaseBtnsContainer.hide();
-            this.$generateResultBtn.hide();
         },
 
         multipleSelectionModeOff: function () {
             this.showTestCaseInfo();
             this.$saveInDatabaseBtn.show();
-            this.$generateResultBtn.show();
         },
 
         onTestsSetChanged: function (ids) {
             if (ids && ids.length) {
                 this.databaseService.allTestCases(ids, (docs) => {
                     this.testCaseResultTableWidget.reDraw(docs);
-                    this.$resultContent.slideDown();
                 });
             } else {
-                this.$resultContent.slideUp(() => this.testCaseResultTableWidget.reDraw());
+                this.testCaseResultTableWidget.reDraw();
             }
         },
 
@@ -186,7 +180,7 @@
     TestCase.prototype.showTestCaseInfo = function (id) {
         function onSuccess(settings, values) {
             this.testCaseInfoWidget.reDraw(settings, values);
-            this.$resultContent.slideUp();
+            this.testCaseResultTableWidget.reDraw([this.testCaseInfoWidget.getTestCaseData()]);
         }
 
         this.activeTestCaseId = id || '';

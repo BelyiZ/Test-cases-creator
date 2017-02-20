@@ -24,11 +24,17 @@
         this._msgRemovedRowHint = 'Так выделяются строки, которых нет в серверной версии';
         this._msgRemovedFromServer = 'Редактируемый тест-кейс был удален с сервера. Если сохранить изменения - это будет эквивалентно созданию нового.';
         this._msgChangedOnServer = 'Редактируемый тест кейс был отредактирован. Все различия между реактируемой версией и актуальной указаны в интерфейсе.';
+
+        this._eventHandlers = {};
+        this._eventNames = {
+            changed: 'changed',
+        };
     }
 
     TestCaseInfo.prototype._bindEvents = function () {
-        global.nodes.body.on('click', '.js-add-item', this._events.onAddRowClick.bind(this));
-        global.nodes.body.on('click', '.js-remove-item', this._events.onRemoveRowClick.bind(this));
+        this.$container.on('click', '.js-add-item', this._events.onAddRowClick.bind(this));
+        this.$container.on('click', '.js-remove-item', this._events.onRemoveRowClick.bind(this));
+        this.$container.on('keyup paste change', 'textarea, input', this._events.onTextareaChanged.bind(this));
     };
 
     TestCaseInfo.prototype._events = {
@@ -39,11 +45,18 @@
                     this.$container.find(`#${blockCode}`).append(this._getBlockRowHtml(blockParams));
                 }
             }
+            this.trigger(this._eventNames.changed);
         },
 
         onRemoveRowClick: function (e) {
             $(e.currentTarget).closest('tr').remove();
-        }
+            this.trigger(this._eventNames.changed);
+
+        },
+
+        onTextareaChanged: function () {
+            this.trigger(this._eventNames.changed);
+        },
     };
 
     TestCaseInfo.prototype.reDraw = function (settings, testCaseInfo, serverTestCaseInfo) {
