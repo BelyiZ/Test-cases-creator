@@ -22,8 +22,7 @@
         this.remoteDB = null;
         this.settingsDocId = 'params';
 
-        // this.remoteDbUrl = 'http://testcasecreator-vrn:5984';
-        this.remoteDbUrl = 'http://192.168.130.60:5984';
+        this.remoteDbUrl = 'http://testcasecreator-vrn/couchdb';
 
         this.testCaseIdPrefix = 'testCase';
 
@@ -80,7 +79,9 @@
         $.get(this.remoteDbUrl + '/_all_dbs', (data) => {
             const $dbsList = $('<div class="list-group"></div>');
             for (let dbName of data) {
-                $dbsList.append(`<div class="list-group-item list-group-item-action js-db-name-item" role="button">${dbName}</div>`);
+                if (!dbName.startsWith('_')) {
+                    $dbsList.append(`<div class="list-group-item list-group-item-action js-db-name-item" role="button">${dbName}</div>`);
+                }
             }
 
             const modal = new widgets.Modal({
@@ -99,25 +100,31 @@
 
             const onApplyBtnClick = function () {
                 if (selectedDbName) {
-                    this.localSystemDB.put({
-                        _id: this.remoteDbSettingsId,
-                        _rev: this.remoteDbSettingsRev,
-                        name: selectedDbName,
-                        local: false
-                    })
+                    this.localSystemDB
+                        .put({
+                            _id: this.remoteDbSettingsId,
+                            _rev: this.remoteDbSettingsRev,
+                            name: selectedDbName,
+                            local: false
+                        })
                         .then(() => {
                             this._init();
                             modal.hide();
                         })
                         .catch(this.processError.bind(this));
-
                 } else {
                     utils.ShowNotification.error('Нельзя просто так взять и закрыть окно, ничего не выбрав!')
                 }
             }.bind(this);
 
             const onCancelBtnClick = function () {
-                this.localSystemDB.put({_id: this.remoteDbSettingsId, _rev: this.remoteDbSettingsRev, name: this.localDBName, local: true})
+                this.localSystemDB
+                    .put({
+                        _id: this.remoteDbSettingsId,
+                        _rev: this.remoteDbSettingsRev,
+                        name: this.localDBName,
+                        local: true
+                    })
                     .then(this._init.bind(this))
                     .catch(this.processError.bind(this));
             }.bind(this);
