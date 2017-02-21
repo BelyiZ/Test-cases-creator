@@ -34,11 +34,12 @@
         this._eventNames = {
             dataBaseChanged: 'dataBaseChanged',
         };
+
+        this._initDbChoosingDialog();
     }
 
     DatabaseService.prototype._init = function () {
         this.localSystemDB = new PouchDB(this.localSystemDbName);
-
         this.localSystemDB.get(this.remoteDbSettingsId)
             .then((doc) => {
                 this.remoteDbSettingsRev = doc._rev;
@@ -75,6 +76,43 @@
             .on('error', (err) => console.error('Database sync error. ' + err));
     };
 
+    DatabaseService.prototype._initDbChoosingDialog = function () {
+        this.dbChoosingModal = new widgets.Modal({
+            title: 'Нужно выбрать базу данных',
+            cancelBtnText: 'Использовать локальную БД',
+        }).initialize();
+
+        let selectedDbName = '';
+
+        global.nodes.body.on('click', '.js-db-name-item', function (e) {
+            const $target = $(e.currentTarget);
+            selectedDbName = $target.text();
+            $('.js-db-name-item').removeClass('active');
+            $target.addClass('active');
+        }.bind(this));
+
+        this.dbChoosingModal.on('apply', () => {
+            if (selectedDbName) {
+                this.localSystemDB
+                    .put({_id: this.remoteDbSettingsId, _rev: this.remoteDbSettingsRev, name: selectedDbName, local: false})
+                    .then(() => {
+                        this._init();
+                        this.dbChoosingModal.hide();
+                    })
+                    .catch(this.processError.bind(this));
+            } else {
+                utils.ShowNotification.error('Нельзя просто так взять и закрыть окно, ничего не выбрав!')
+            }
+        });
+
+        this.dbChoosingModal.on('cancel', function () {
+            this.localSystemDB
+                .put({_id: this.remoteDbSettingsId, _rev: this.remoteDbSettingsRev, name: this.localDBName, local: true})
+                .then(this._init.bind(this))
+                .catch(this.processError.bind(this));
+        }, this);
+    };
+
     DatabaseService.prototype.showDbChoosingDialog = function () {
         $.get(this.remoteDbUrl + '/_all_dbs', (data) => {
             const $dbsList = $('<div class="list-group"></div>');
@@ -83,58 +121,8 @@
                     $dbsList.append(`<div class="list-group-item list-group-item-action js-db-name-item" role="button">${dbName}</div>`);
                 }
             }
-
-            const modal = new widgets.Modal({
-                title: 'Нужно выбрать базу данных',
-                cancelBtnText: 'Использовать локальную БД',
-                contentHtml: $dbsList[0].outerHTML
-            }).initialize();
-
-            let selectedDbName = '';
-            const onDbNameSelected = function (e) {
-                const $target = $(e.currentTarget);
-                selectedDbName = $target.text();
-                $('.js-db-name-item').removeClass('active');
-                $target.addClass('active');
-            }.bind(this);
-
-            const onApplyBtnClick = function () {
-                if (selectedDbName) {
-                    this.localSystemDB
-                        .put({
-                            _id: this.remoteDbSettingsId,
-                            _rev: this.remoteDbSettingsRev,
-                            name: selectedDbName,
-                            local: false
-                        })
-                        .then(() => {
-                            this._init();
-                            modal.hide();
-                        })
-                        .catch(this.processError.bind(this));
-                } else {
-                    utils.ShowNotification.error('Нельзя просто так взять и закрыть окно, ничего не выбрав!')
-                }
-            }.bind(this);
-
-            const onCancelBtnClick = function () {
-                this.localSystemDB
-                    .put({
-                        _id: this.remoteDbSettingsId,
-                        _rev: this.remoteDbSettingsRev,
-                        name: this.localDBName,
-                        local: true
-                    })
-                    .then(this._init.bind(this))
-                    .catch(this.processError.bind(this));
-            }.bind(this);
-
-            modal.on('show', () => global.nodes.body.on('click', '.js-db-name-item', onDbNameSelected), this);
-            modal.on('hide', () => global.nodes.body.off('click', '.js-db-name-item', onDbNameSelected), this);
-            modal.on('apply', onApplyBtnClick, this);
-            modal.on('cancel', onCancelBtnClick, this);
-
-            modal.show();
+            this.dbChoosingModal.setContentHtml($dbsList[0].outerHTML);
+            this.dbChoosingModal.show();
         });
     };
 

@@ -64,6 +64,11 @@
         this.$modal.modal('hide');
     };
 
+    Modal.prototype.setContentHtml = function (contentHtml) {
+        this.contentHtml = contentHtml;
+        this.$modal.find('.modal-body').html(contentHtml);
+    };
+
     Modal.prototype._buildModalHtml = function () {
         return `
             <div class="modal fade" ${this.closable ? '' : 'data-backdrop="static"'}>
