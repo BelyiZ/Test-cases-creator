@@ -9,8 +9,13 @@
      * @constructor
      */
     function TestCase() {
-        this.downloadFileName = 'testCase';
+        this.pageSettings = {
+            createBtnText: 'Создать новый',
+            saveBtnText: 'Сохранить изменения',
+            removeBtnText: 'Удалить тест-кейс',
+        };
 
+        this.downloadFileName = 'testCase';
         this.activeTestCaseId = -1;
     }
 
@@ -19,11 +24,11 @@
 
         this.$content = $('#content');
         this.$resultTable = $('#resultTable');
-        this.$testCasesListContainer = $('#testCasesListContainer');
+        this.$testCasesListContainer = $('#itemsVerticalListContainer');
 
-        this.$manageTestCaseBtnsContainer = $('.js-manage-test-case-buttons');
-        this.$removeTestCaseBtn = this.$manageTestCaseBtnsContainer.find('.js-remove-test-case');
-        this.$saveInDatabaseBtn = $('.js-save-in-db');
+        this.$manageTestCaseBtnsContainer = $('.js-manage-item-buttons');
+        this.$removeTestCaseBtn = this.$manageTestCaseBtnsContainer.find('.js-remove-button');
+        this.$saveInDatabaseBtn = $('.js-save-button');
         this.$localDbBadge = $('.js-local-db-badge');
         this.$currentDbNameBadge = $('.js-current-db');
     };
@@ -33,16 +38,14 @@
         this.testsSetWidget = new widgets.TestsSet({container: this.$content}).initialize();
         this.testCaseResultTableWidget = new widgets.TestCaseResultTable({container: this.$resultTable}).initialize();
         this.testCasesListWidget = new widgets.TestCasesList({container: this.$testCasesListContainer}).initialize();
-
-        this.casesVerticalMenu = new widgets.VerticalMenu({menuId: 'casesListVerticalMenu'}).initialize();
     };
 
     TestCase.prototype._bindEvents = function () {
         this.$container.on('keyup', 'textarea', this._events.onTextAreaKeyup.bind(this));
         this.$container.on('click', '.js-download-file', this._events.onDownloadButtonClick.bind(this));
-        this.$container.on('click', '.js-save-in-db', this._events.onSaveInDbClick.bind(this));
+        this.$container.on('click', '.js-save-button', this._events.onSaveInDbClick.bind(this));
         this.$container.on('click', '.js-create-button', this._events.onCreateButtonClick.bind(this));
-        this.$container.on('click', '.js-remove-test-case', this._events.onRemoveTestCaseClick.bind(this));
+        this.$container.on('click', '.js-remove-button', this._events.onRemoveTestCaseClick.bind(this));
 
         this.testCasesListWidget.on('selected', this._events.onTestCaseSelected, this);
         this.testCasesListWidget.on('multipleSelected', this._events.onMultipleTestCasesSelected, this);
@@ -91,7 +94,7 @@
         },
 
         onTestCaseSelected: function (data) {
-            this.casesVerticalMenu.hide();
+            global.nodes.body.trigger('closeVerticalMenu');
             this.showTestCaseInfo(data.id);
         },
 

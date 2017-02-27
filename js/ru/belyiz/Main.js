@@ -24,12 +24,15 @@
 
     Main.prototype._createWidgets = function () {
         this.settingsModalWidget = new widgets.SettingsModal().initialize();
+        this.verticalMenu = new widgets.VerticalMenu({menuId: 'itemsVerticalListMenu'}).initialize();
     };
 
     Main.prototype._bindEvents = function () {
         global.nodes.body.on('click', '.js-settings-button', this._events.onEditSettingsClick.bind(this));
         global.nodes.body.on('click', '.js-change-db-button', this._events.onChangeDbClick.bind(this));
         global.nodes.body.on('click', '.js-nav-link', this._showPage.bind(this));
+
+        global.nodes.body.on('closeVerticalMenu', () => this.verticalMenu.hide());
 
         this.settingsModalWidget.on('save', this._events.onSettingsSaved, this);
     };
@@ -56,11 +59,11 @@
 
     Main.prototype._showPage = function () {
         const pageCode = this._getCurrentUrlHash();
-        
+
         if (!this.initPages[pageCode]) {
             this.initPages[pageCode] = new pages[pageCode]().initialize();
         }
-        
+
         this.$pagesContainers.hide();
         this.$pagesContainers.filter(`[data-page-code="${pageCode}"]`).show();
     };

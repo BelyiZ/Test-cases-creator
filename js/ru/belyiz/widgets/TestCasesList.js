@@ -25,14 +25,8 @@
         };
     }
 
-    TestCasesList.prototype._cacheElements = function () {
-        this.$listContainer = this.$container.find('.js-test-cases-list');
-        this.$selectSomeCasesBtn = this.$container.find('.js-select-some-cases');
-    };
-
     TestCasesList.prototype._bindEvents = function () {
         this.$container.on('click', '.js-test-case-item', this._events.onListItemCLick.bind(this));
-        this.$container.on('click', '.js-select-some-cases', this._events.onSelectSomeCasesClick.bind(this));
     };
 
     TestCasesList.prototype._events = {
@@ -63,29 +57,13 @@
 
                 this.trigger(this._eventNames.selected, {id: id, rev: rev});
             }
-        },
-
-        onSelectSomeCasesClick: function (e) {
-            const $target = $(e.currentTarget);
-
-            this.multipleSelectionMode = !this.multipleSelectionMode;
-            this.selectedIds = [];
-
-            this.resetSelection();
-            this.$container.toggleClass('multiple-selection', this.multipleSelectionMode);
-
-            if (this.multipleSelectionMode) {
-                this.trigger(this._eventNames.multipleSelectionModeOn);
-                $target.text('Вернуться к редактированию');
-            } else {
-                this.trigger(this._eventNames.multipleSelectionModeOff);
-                $target.text('Выбрать несколько готовых');
-            }
         }
     };
 
     TestCasesList.prototype.reDraw = function (testCases, currentTestCaseId) {
-        this.$listContainer.html('');
+        this.$container.html('');
+
+        const $listGroup = $('<div class="js-items-list list-group"></div>');
 
         if (testCases && testCases.length) {
             for (let testCase of testCases) {
@@ -100,7 +78,7 @@
                 }
 
                 const isActive = currentTestCaseId && currentTestCaseId === testCase._id;
-                this.$listContainer.append(`
+                $listGroup.append(`
                     <div class="list-group-item list-group-item-action js-test-case-item ${isActive ? 'active' : ''}" role="button"
                          data-test-case-id="${testCase._id}"
                          data-test-case-rev="${testCase._rev}">
@@ -109,16 +87,15 @@
                     </div>
                 `);
             }
-            this.$selectSomeCasesBtn.show();
+            this.$container.append($listGroup);
         } else {
-            this.$selectSomeCasesBtn.hide();
-            this.$listContainer.html(`<div class="alert alert-info">Нет сохраненных тест-кейсов</div>`);
+            this.$container.html(`<div class="alert alert-info">Нет сохраненных тест-кейсов</div>`);
         }
     };
 
     TestCasesList.prototype.resetSelection = function () {
-        this.$listContainer.find('.active').removeClass('active');
-        this.$listContainer.find('.js-checkbox').addClass('fa-square-o').removeClass('fa-check-square-o');
+        this.$container.find('.active').removeClass('active');
+        this.$container.find('.js-checkbox').addClass('fa-square-o').removeClass('fa-check-square-o');
     };
 
 })(window, window.ru.belyiz.patterns.Widget, window.ru.belyiz.utils, window.ru.belyiz.widgets);
