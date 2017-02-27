@@ -1,6 +1,6 @@
 /** @namespace window.ru.belyiz.pages.TestCase */
 
-(function (global, Pattern, utils, widgets, serices) {
+(function (global, Pattern, utils, widgets, services) {
     'use strict';
     utils.Package.declare('ru.belyiz.pages.TestCase', TestCase);
     Pattern.extend(TestCase);
@@ -15,6 +15,8 @@
     }
 
     TestCase.prototype._cacheElements = function () {
+        this.$container = $('.js-page-container[data-page-code="TestCase"]');
+
         this.$content = $('#content');
         this.$resultTable = $('#resultTable');
         this.$testCasesListContainer = $('#testCasesListContainer');
@@ -31,21 +33,16 @@
         this.testsSetWidget = new widgets.TestsSet({container: this.$content}).initialize();
         this.testCaseResultTableWidget = new widgets.TestCaseResultTable({container: this.$resultTable}).initialize();
         this.testCasesListWidget = new widgets.TestCasesList({container: this.$testCasesListContainer}).initialize();
-        this.settingsModalWidget = new widgets.SettingsModal().initialize();
 
         this.casesVerticalMenu = new widgets.VerticalMenu({menuId: 'casesListVerticalMenu'}).initialize();
     };
 
     TestCase.prototype._bindEvents = function () {
-        global.nodes.body.on('keyup', 'textarea', this._events.onTextAreaKeyup.bind(this));
-        global.nodes.body.on('click', '.js-settings-button', this._events.onEditSettingsClick.bind(this));
-        global.nodes.body.on('click', '.js-change-db-button', this._events.onChangeDbClick.bind(this));
-        global.nodes.body.on('click', '.js-download-file', this._events.onDownloadButtonClick.bind(this));
-        global.nodes.body.on('click', '.js-save-in-db', this._events.onSaveInDbClick.bind(this));
-        global.nodes.body.on('click', '.js-create-button', this._events.onCreateButtonClick.bind(this));
-        global.nodes.body.on('click', '.js-remove-test-case', this._events.onRemoveTestCaseClick.bind(this));
-
-        this.settingsModalWidget.on('save', this._events.onSettingsSaved, this);
+        this.$container.on('keyup', 'textarea', this._events.onTextAreaKeyup.bind(this));
+        this.$container.on('click', '.js-download-file', this._events.onDownloadButtonClick.bind(this));
+        this.$container.on('click', '.js-save-in-db', this._events.onSaveInDbClick.bind(this));
+        this.$container.on('click', '.js-create-button', this._events.onCreateButtonClick.bind(this));
+        this.$container.on('click', '.js-remove-test-case', this._events.onRemoveTestCaseClick.bind(this));
 
         this.testCasesListWidget.on('selected', this._events.onTestCaseSelected, this);
         this.testCasesListWidget.on('multipleSelected', this._events.onMultipleTestCasesSelected, this);
@@ -55,11 +52,9 @@
         this.testsSetWidget.on('changed', this._events.onTestsSetChanged, this);
 
         this.testCaseInfoWidget.on('changed', this._events.onTestCaseDataChanged, this);
-    };
 
-    TestCase.prototype._initServices = function () {
-        serices.DatabaseService.on('dbChanged', this._events.onDatabaseChanged, this);
-        serices.DatabaseService.on('dbSynchronized', this._events.onDatabaseSynchronized, this);
+        services.DatabaseService.on('dbChanged', this._events.onDatabaseChanged, this);
+        services.DatabaseService.on('dbSynchronized', this._events.onDatabaseSynchronized, this);
     };
 
     TestCase.prototype._events = {
@@ -79,23 +74,8 @@
 
         onRemoveTestCaseClick: function () {
             const testCaseData = this.testCaseInfoWidget.getTestCaseData();
-            serices.DatabaseService.removeEntity(testCaseData, () => this.showTestCaseInfo());
+            services.DatabaseService.removeEntity(testCaseData, () => this.showTestCaseInfo());
             this.showTestCasesList();
-        },
-
-        onEditSettingsClick: function () {
-            serices.DatabaseService.getSettings(settings => {
-                this.settingsModalWidget.show(settings);
-            });
-        },
-
-        onChangeDbClick: function () {
-            serices.DatabaseService.showDbChoosingDialog();
-        },
-
-        onSettingsSaved: function (newSettings) {
-            serices.DatabaseService.saveSettings(newSettings, (entity) => this.showTestCaseInfo());
-            this.testCasesListWidget.resetSelection();
         },
 
         onTextAreaKeyup: function (e) {
@@ -104,7 +84,7 @@
 
         onSaveInDbClick: function () {
             const data = this.testCaseInfoWidget.getTestCaseData();
-            serices.DatabaseService.saveEntity(data, response => {
+            services.DatabaseService.saveEntity(data, response => {
                 this.showTestCaseInfo(response.id);
                 this.showTestCasesList(response.id);
             });
@@ -117,7 +97,7 @@
 
         onMultipleTestCasesSelected: function (data) {
             if (data.ids && data.ids.length) {
-                serices.DatabaseService.allTestCases(data.ids, (docs) => this.testsSetWidget.reDraw(docs));
+                services.DatabaseService.allTestCases(data.ids, (docs) => this.testsSetWidget.reDraw(docs));
             } else {
                 this.testsSetWidget.reDraw();
             }
@@ -136,7 +116,7 @@
 
         onTestsSetChanged: function (ids) {
             if (ids && ids.length) {
-                serices.DatabaseService.allTestCases(ids, (docs) => {
+                services.DatabaseService.allTestCases(ids, (docs) => {
                     this.testCaseResultTableWidget.reDraw(docs);
                 });
             } else {
@@ -147,7 +127,7 @@
         onDatabaseSynchronized: function () {
             this.showTestCasesList(this.activeTestCaseId);
             if (this.activeTestCaseId) {
-                serices.DatabaseService.getEntity(
+                services.DatabaseService.getEntity(
                     this.activeTestCaseId,
                     entity => this.testCaseInfoWidget.showDifference(entity),
                     err => {
@@ -155,7 +135,7 @@
                             this.testCaseInfoWidget.removedOnServer();
                             this.$removeTestCaseBtn.hide();
                         } else {
-                            serices.DatabaseService.processError.call(serices.DatabaseService, err)
+                            services.DatabaseService.processError.call(services.DatabaseService, err)
                         }
                     }
                 );
@@ -163,7 +143,7 @@
         },
 
         onDatabaseChanged: function (data) {
-            serices.DatabaseService.getSettings(settings => {
+            services.DatabaseService.getSettings(settings => {
                 this.testCaseResultTableWidget.useMarkDown = !!settings.markdown
             });
             this.showTestCasesList();
@@ -182,17 +162,17 @@
         this.activeTestCaseId = id || '';
 
         if (id) {
-            serices.DatabaseService.getEntity(id, entity => onSuccess.call(this, entity.settings, entity));
+            services.DatabaseService.getEntity(id, entity => onSuccess.call(this, entity.settings, entity));
             this.$removeTestCaseBtn.show();
         } else {
-            serices.DatabaseService.getSettings(settings => onSuccess.call(this, settings));
+            services.DatabaseService.getSettings(settings => onSuccess.call(this, settings));
             this.$removeTestCaseBtn.hide();
         }
         this.$manageTestCaseBtnsContainer.show();
     };
 
     TestCase.prototype.showTestCasesList = function (activeId) {
-        serices.DatabaseService.allTestCases([], docs => this.testCasesListWidget.reDraw(docs, activeId));
+        services.DatabaseService.allTestCases([], docs => this.testCasesListWidget.reDraw(docs, activeId));
     };
 
 })(window, window.ru.belyiz.patterns.Page, window.ru.belyiz.utils, window.ru.belyiz.widgets, window.ru.belyiz.services);
