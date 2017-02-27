@@ -58,14 +58,8 @@
     };
 
     TestCase.prototype._initServices = function () {
-        this.databaseService = new serices.DatabaseService({
-            onDatabaseSynchronized: this._events.onDatabaseSynchronized.bind(this)
-        }).initialize();
-
-        this.databaseService.on('dataBaseChanged', this._events.onDatabaseChanged, this);
-    };
-
-    TestCase.prototype._ready = function () {
+        serices.DatabaseService.on('dbChanged', this._events.onDatabaseChanged, this);
+        serices.DatabaseService.on('dbSynchronized', this._events.onDatabaseSynchronized, this);
     };
 
     TestCase.prototype._events = {
@@ -85,22 +79,22 @@
 
         onRemoveTestCaseClick: function () {
             const testCaseData = this.testCaseInfoWidget.getTestCaseData();
-            this.databaseService.removeEntity(testCaseData, () => this.showTestCaseInfo());
+            serices.DatabaseService.removeEntity(testCaseData, () => this.showTestCaseInfo());
             this.showTestCasesList();
         },
 
         onEditSettingsClick: function () {
-            this.databaseService.getSettings(settings => {
+            serices.DatabaseService.getSettings(settings => {
                 this.settingsModalWidget.show(settings);
             });
         },
 
         onChangeDbClick: function () {
-            this.databaseService.showDbChoosingDialog();
+            serices.DatabaseService.showDbChoosingDialog();
         },
 
         onSettingsSaved: function (newSettings) {
-            this.databaseService.saveSettings(newSettings, (entity) => this.showTestCaseInfo());
+            serices.DatabaseService.saveSettings(newSettings, (entity) => this.showTestCaseInfo());
             this.testCasesListWidget.resetSelection();
         },
 
@@ -110,7 +104,7 @@
 
         onSaveInDbClick: function () {
             const data = this.testCaseInfoWidget.getTestCaseData();
-            this.databaseService.saveEntity(data, response => {
+            serices.DatabaseService.saveEntity(data, response => {
                 this.showTestCaseInfo(response.id);
                 this.showTestCasesList(response.id);
             });
@@ -123,7 +117,7 @@
 
         onMultipleTestCasesSelected: function (data) {
             if (data.ids && data.ids.length) {
-                this.databaseService.allTestCases(data.ids, (docs) => this.testsSetWidget.reDraw(docs));
+                serices.DatabaseService.allTestCases(data.ids, (docs) => this.testsSetWidget.reDraw(docs));
             } else {
                 this.testsSetWidget.reDraw();
             }
@@ -142,7 +136,7 @@
 
         onTestsSetChanged: function (ids) {
             if (ids && ids.length) {
-                this.databaseService.allTestCases(ids, (docs) => {
+                serices.DatabaseService.allTestCases(ids, (docs) => {
                     this.testCaseResultTableWidget.reDraw(docs);
                 });
             } else {
@@ -153,7 +147,7 @@
         onDatabaseSynchronized: function () {
             this.showTestCasesList(this.activeTestCaseId);
             if (this.activeTestCaseId) {
-                this.databaseService.getEntity(
+                serices.DatabaseService.getEntity(
                     this.activeTestCaseId,
                     entity => this.testCaseInfoWidget.showDifference(entity),
                     err => {
@@ -161,7 +155,7 @@
                             this.testCaseInfoWidget.removedOnServer();
                             this.$removeTestCaseBtn.hide();
                         } else {
-                            this.databaseService.processError.call(this.databaseService, err)
+                            serices.DatabaseService.processError.call(serices.DatabaseService, err)
                         }
                     }
                 );
@@ -169,7 +163,7 @@
         },
 
         onDatabaseChanged: function (data) {
-            this.databaseService.getSettings(settings => {
+            serices.DatabaseService.getSettings(settings => {
                 this.testCaseResultTableWidget.useMarkDown = !!settings.markdown
             });
             this.showTestCasesList();
@@ -188,17 +182,17 @@
         this.activeTestCaseId = id || '';
 
         if (id) {
-            this.databaseService.getEntity(id, entity => onSuccess.call(this, entity.settings, entity));
+            serices.DatabaseService.getEntity(id, entity => onSuccess.call(this, entity.settings, entity));
             this.$removeTestCaseBtn.show();
         } else {
-            this.databaseService.getSettings(settings => onSuccess.call(this, settings));
+            serices.DatabaseService.getSettings(settings => onSuccess.call(this, settings));
             this.$removeTestCaseBtn.hide();
         }
         this.$manageTestCaseBtnsContainer.show();
     };
 
     TestCase.prototype.showTestCasesList = function (activeId) {
-        this.databaseService.allTestCases([], docs => this.testCasesListWidget.reDraw(docs, activeId));
+        serices.DatabaseService.allTestCases([], docs => this.testCasesListWidget.reDraw(docs, activeId));
     };
 
 })(window, window.ru.belyiz.patterns.Page, window.ru.belyiz.utils, window.ru.belyiz.widgets, window.ru.belyiz.services);

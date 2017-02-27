@@ -1,17 +1,12 @@
 /** @namespace window.ru.belyiz.services.DatabaseService */
 (function (global, Pattern, widgets, utils) {
     'use strict';
-    utils.Package.declare('ru.belyiz.services.DatabaseService', DatabaseService);
     Pattern.extend(DatabaseService);
 
     /**
      * @constructor
      */
-    function DatabaseService(setup) {
-        setup = setup || {};
-
-        this.onDatabaseSynchronized = setup.onDatabaseSynchronized;
-
+    function DatabaseService() {
         this.localSystemDB = null;
         this.localSystemDbName = 'tccSystemDB';
         this.remoteDbSettingsId = '_local/remoteDbSettings';
@@ -32,13 +27,17 @@
 
         this._eventHandlers = {};
         this._eventNames = {
-            dataBaseChanged: 'dataBaseChanged',
+            dbChanged: 'dbChanged',
+            dbSynchronized: 'dbSynchronized',
         };
-
-        this._initDbChoosingDialog();
     }
 
     DatabaseService.prototype._init = function () {
+        this._initDbChoosingDialog();
+        this._initDatabases();
+    };
+
+    DatabaseService.prototype._initDatabases = function () {
         this.localSystemDB = new PouchDB(this.localSystemDbName);
         this.localSystemDB.get(this.remoteDbSettingsId)
             .then((doc) => {
@@ -48,7 +47,7 @@
                     if (!doc.local) {
                         this._initSync(doc.name);
                     }
-                    this.trigger(this._eventNames.dataBaseChanged, {local: !!doc.local, name: doc.name});
+                    this.trigger(this._eventNames.dbChanged, {local: !!doc.local, name: doc.name});
                 } else {
                     this.showDbChoosingDialog();
                 }
@@ -70,7 +69,10 @@
                 live: true,
                 retry: true
             })
-            .on('change', this._onDatabaseSynchronized.bind(this))
+            .on('change', () => {
+                console.debug('Database changes synchronized.');
+                this.trigger(this._eventNames.dbSynchronized);
+            })
             .on('paused', () => console.debug('Database sync paused.'))
             .on('active', () => console.debug('Database sync resumed.'))
             .on('error', (err) => console.error('Database sync error. ' + err));
@@ -96,7 +98,7 @@
                 this.localSystemDB
                     .put({_id: this.remoteDbSettingsId, _rev: this.remoteDbSettingsRev, name: selectedDbName, local: false})
                     .then(() => {
-                        this._init();
+                        this._initDatabases();
                         this.dbChoosingModal.hide();
                     })
                     .catch(this.processError.bind(this));
@@ -108,7 +110,7 @@
         this.dbChoosingModal.on('cancel', function () {
             this.localSystemDB
                 .put({_id: this.remoteDbSettingsId, _rev: this.remoteDbSettingsRev, name: this.localDBName, local: true})
-                .then(this._init.bind(this))
+                .then(this._initDatabases.bind(this))
                 .catch(this.processError.bind(this));
         }, this);
     };
@@ -124,11 +126,6 @@
             this.dbChoosingModal.setContentHtml($dbsList[0].outerHTML);
             this.dbChoosingModal.show();
         });
-    };
-
-    DatabaseService.prototype._onDatabaseSynchronized = function () {
-        console.debug('Database changes synchronized.');
-        typeof this.onDatabaseSynchronized === 'function' && this.onDatabaseSynchronized();
     };
 
     DatabaseService.prototype.processError = function (err) {
@@ -227,4 +224,5 @@
         return hash;
     };
 
+    utils.Package.declare('ru.belyiz.services.DatabaseService', new DatabaseService().initialize());
 })(window, window.ru.belyiz.patterns.Service, window.ru.belyiz.widgets, window.ru.belyiz.utils);

@@ -23,11 +23,9 @@
      * Initialize instance of "class"
      * @returns {Service} this instance
      */
-    Service.prototype.initialize = function (callback) {
+    Service.prototype.initialize = function () {
         if (typeof this._init === 'function') {
-            this._init(callback);
-        } else {
-            typeof callback === 'function' && callback();
+            this._init();
         }
 
         return this;
