@@ -19,7 +19,7 @@
 
         this.remoteDbUrl = 'http://testcasecreator-vrn/couchdb';
 
-        this.testCaseIdPrefix = 'testCase';
+        this.initialized = false;
 
         this._msgOptimisticLock = 'Кто-то успел измененить исходные данные, пока ты редактировал(а). Нужно обновиться и только потом сохранить свои изменения.';
         this._msgUnparsedError = 'Произошла ошибка во время работы с базой данных. Подробности: <br> ';
@@ -47,6 +47,7 @@
                     if (!doc.local) {
                         this._initSync(doc.name);
                     }
+                    this.initialized = true;
                     this.trigger(this._eventNames.dbChanged, {local: !!doc.local, name: doc.name});
                 } else {
                     this.showDbChoosingDialog();
@@ -160,7 +161,7 @@
 
     DatabaseService.prototype.saveSettings = function (settings, callback, errorCallback) {
         settings._id = this.settingsDocId;
-        this.saveEntity(settings, callback, errorCallback);
+        this.saveEntity('', settings, callback, errorCallback);
     };
 
     DatabaseService.prototype.getEntity = function (id, callback, errorCallback) {
@@ -169,14 +170,14 @@
             .catch(typeof errorCallback === 'function' && errorCallback || this.processError.bind(this));
     };
 
-    DatabaseService.prototype.saveEntity = function (data, callback, errorCallback) {
+    DatabaseService.prototype.saveEntity = function (idPrefix, data, callback, errorCallback) {
         if (!data._id) {
             delete data._id;
             delete data._rev;
             delete data.hash;
 
             data.hash = this._generateHash(data);
-            data._id = this.testCaseIdPrefix + data.hash + Math.random();
+            data._id = idPrefix + data.hash + Math.random();
         }
 
         this.localDB.put(data)
@@ -190,13 +191,13 @@
             .catch(typeof errorCallback === 'function' && errorCallback || this.processError.bind(this));
     };
 
-    DatabaseService.prototype.allTestCases = function (ids, callback, errorCallback) {
+    DatabaseService.prototype.allDocs = function (idPrefix, ids, callback, errorCallback) {
         let queryParams = {include_docs: true};
         if (ids && ids.length) {
             queryParams.keys = ids;
         } else {
-            queryParams.startkey = this.testCaseIdPrefix;
-            queryParams.endkey = this.testCaseIdPrefix + '\uffff';
+            queryParams.startkey = idPrefix;
+            queryParams.endkey = idPrefix + '\uffff';
         }
 
         this.localDB
@@ -209,6 +210,13 @@
                 callback(docs);
             })
             .catch(typeof errorCallback === 'function' && errorCallback || this.processError.bind(this));
+    };
+
+    /**
+     * @returns {boolean} готов ли сервис к использованию
+     */
+    DatabaseService.prototype.isInitialized = function () {
+        return this.initialized;
     };
 
     DatabaseService.prototype._generateHash = function (data) {

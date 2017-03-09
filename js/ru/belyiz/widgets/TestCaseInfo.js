@@ -67,20 +67,20 @@
         const localRevision = testCaseInfo && testCaseInfo._rev || '';
         this.testCaseRevision = serverRevision || localRevision;
 
-        let html = this._getHeaderRowsHtml(settings.headerParams, testCaseInfo, serverTestCaseInfo);
+        this.$container.html('');
+        this.$container.append(this._getHeaderRowsHtml(settings.headerParams, testCaseInfo, serverTestCaseInfo));
         for (let blockSettings of settings.blocks) {
             const localBlockValues = testCaseInfo && testCaseInfo.blocksValues && testCaseInfo.blocksValues[blockSettings.code] || false;
             const serverBlockValues = serverTestCaseInfo && serverTestCaseInfo.blocksValues && serverTestCaseInfo.blocksValues[blockSettings.code] || false;
-            html += this._getBlocksHtml(blockSettings, localBlockValues, serverBlockValues);
+            this.$container.append(this._getBlocksHtml(blockSettings, localBlockValues, serverBlockValues));
         }
-
-        this.$container.html(html);
-
         $('.js-input-data-table').sortable({
             items: ">.draggable"
         });
 
         utils.InputsUtils.resizeTextAreas();
+
+        this.trigger(this._eventNames.changed);
     };
 
     TestCaseInfo.prototype.showDifference = function (serverTestCaseInfo) {
@@ -104,7 +104,7 @@
         this.reDraw(this.settings, testCaseData);
     };
 
-    TestCaseInfo.prototype.getTestCaseData = function () {
+    TestCaseInfo.prototype.getData = function () {
         let testCaseData = {
             _id: this.testCaseId,
             _rev: this.testCaseRevision,
@@ -264,4 +264,4 @@
         return false;
     };
 
-})(window, window.ru.belyiz.patterns.Widget, window.ru.belyiz.utils);
+})(window, window.ru.belyiz.patterns.AbstractEntityInfoWidget, window.ru.belyiz.utils);

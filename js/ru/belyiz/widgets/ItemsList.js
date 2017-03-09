@@ -1,15 +1,17 @@
-/** @namespace window.ru.belyiz.widgets.TestCasesList */
+/** @namespace window.ru.belyiz.widgets.ItemsList */
 
 (function (global, Pattern, utils, widgets) {
     'use strict';
-    utils.Package.declare('ru.belyiz.widgets.TestCasesList', TestCasesList);
-    Pattern.extend(TestCasesList);
+    utils.Package.declare('ru.belyiz.widgets.ItemsList', ItemsList);
+    Pattern.extend(ItemsList);
 
     /**
      * @constructor
      */
-    function TestCasesList(setup) {
+    function ItemsList(setup) {
         setup = setup || {};
+
+        this.emptyListMsg = setup.emptyListMsg || 'Список пуст';
 
         this.$container = $(setup.container);
 
@@ -25,15 +27,15 @@
         };
     }
 
-    TestCasesList.prototype._bindEvents = function () {
-        this.$container.on('click', '.js-test-case-item', this._events.onListItemCLick.bind(this));
+    ItemsList.prototype._bindEvents = function () {
+        this.$container.on('click', '.js-items-list-item', this._events.onListItemClick.bind(this));
     };
 
-    TestCasesList.prototype._events = {
-        onListItemCLick: function (e) {
+    ItemsList.prototype._events = {
+        onListItemClick: function (e) {
             const $target = $(e.currentTarget);
-            const id = $target.data('testCaseId');
-            const rev = $target.data('testCaseRev');
+            const id = $target.data('itemId');
+            const rev = $target.data('itemRev');
 
             if (this.multipleSelectionMode) {
                 $target.toggleClass('active');
@@ -51,7 +53,7 @@
                 }
                 this.trigger(this._eventNames.multipleSelected, {ids: this.selectedIds});
 
-            } else if (!$target.hasClass('active')) {
+            } else {
                 this.resetSelection();
                 $target.addClass('active');
 
@@ -60,42 +62,41 @@
         }
     };
 
-    TestCasesList.prototype.reDraw = function (testCases, currentTestCaseId) {
+    ItemsList.prototype.reDraw = function (items, currentItemId) {
         this.$container.html('');
 
         const $listGroup = $('<div class="js-items-list list-group"></div>');
 
-        if (testCases && testCases.length) {
-            for (let testCase of testCases) {
-                let html = '';
-                for (let rowParam of testCase.settings.headerParams.rows) {
-                    html += `
-                        <div class="text-truncate">
-                            <small><b>${rowParam.name}:</b></small> 
-                            ${testCase.headerValues[rowParam.code]}
-                        </div>
-                    `;
-                }
+        if (items && items.length) {
+            for (let item of items) {
+                const $itemsContainer = $('<div class="d-inline-block full-width"></div>');
+                $.each(item, (key, value) => {
+                    if (!key.startsWith('_')) {
+                        $itemsContainer.append(`<div class="text-truncate"><small><b>${key}:</b></small> ${value}</div>`);
+                    }
+                });
 
-                const isActive = currentTestCaseId && currentTestCaseId === testCase._id;
-                $listGroup.append(`
-                    <div class="list-group-item list-group-item-action js-test-case-item ${isActive ? 'active' : ''}" role="button"
-                         data-test-case-id="${testCase._id}"
-                         data-test-case-rev="${testCase._rev}">
+                const isActive = currentItemId && currentItemId === item._id;
+                const $listGroupItem = $(`
+                    <div class="list-group-item list-group-item-action js-items-list-item ${isActive ? 'active' : ''}" role="button"
+                         data-item-id="${item._id}"
+                         data-item-rev="${item._rev}">
                          <div class="collapse align-top cases-list-checkbox"><i class="fa fa-square-o align-middle js-checkbox"/></div>
-                         <div class="d-inline-block full-width">${html}</div>
                     </div>
                 `);
+
+                $listGroupItem.append($itemsContainer);
+                $listGroup.append($listGroupItem);
             }
             this.$container.append($listGroup);
         } else {
-            this.$container.html(`<div class="alert alert-info">Нет сохраненных тест-кейсов</div>`);
+            this.$container.html(`<div class="alert alert-info">${this.emptyListMsg}</div>`);
         }
     };
 
-    TestCasesList.prototype.resetSelection = function () {
+    ItemsList.prototype.resetSelection = function () {
         this.$container.find('.active').removeClass('active');
         this.$container.find('.js-checkbox').addClass('fa-square-o').removeClass('fa-check-square-o');
     };
 
-})(window, window.ru.belyiz.patterns.Widget, window.ru.belyiz.utils, window.ru.belyiz.widgets);
+})(window, window.ru.belyiz.patterns.ReDrawableWidget, window.ru.belyiz.utils, window.ru.belyiz.widgets);

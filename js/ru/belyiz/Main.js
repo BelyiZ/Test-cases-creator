@@ -19,7 +19,10 @@
     };
 
     Main.prototype._cacheElements = function () {
-        this.$pagesContainers = $('.js-page-container');
+        this.$pagesContainer = $('.js-page-container');
+        this.$localDbBadge = $('.js-local-db-badge');
+        this.$currentDbNameBadge = $('.js-current-db');
+        this.$pagesLinks = $('.js-nav-link');
     };
 
     Main.prototype._createWidgets = function () {
@@ -30,11 +33,13 @@
     Main.prototype._bindEvents = function () {
         global.nodes.body.on('click', '.js-settings-button', this._events.onEditSettingsClick.bind(this));
         global.nodes.body.on('click', '.js-change-db-button', this._events.onChangeDbClick.bind(this));
-        global.nodes.body.on('click', '.js-nav-link', this._showPage.bind(this));
+        global.nodes.body.on('click', '.js-nav-link', this._events.onPageLinkClick.bind(this));
 
         global.nodes.body.on('closeVerticalMenu', () => this.verticalMenu.hide());
 
         this.settingsModalWidget.on('save', this._events.onSettingsSaved, this);
+
+        services.DatabaseService.on('dbChanged', this._events.onDatabaseChanged, this);
     };
 
     Main.prototype._ready = function () {
@@ -55,17 +60,35 @@
         onSettingsSaved: function (newSettings) {
             services.DatabaseService.saveSettings(newSettings, (entity) => utils.ShowNotification.success("Настройки сохранены"));
         },
+
+        onDatabaseChanged: function (data) {
+            this.$localDbBadge.toggle(!!data.local);
+            this.$currentDbNameBadge.text(data.local ? 'Локальная' : data.name);
+        },
+
+        onPageLinkClick: function (e) {
+            const $target = $(e.currentTarget);
+            const hash = $target.attr('href').replace('#', '');
+            this._showPage(hash);
+        }
     };
 
-    Main.prototype._showPage = function () {
-        const pageCode = this._getCurrentUrlHash();
+    Main.prototype._showPage = function (pageCode) {
+        pageCode = pageCode || this._getCurrentUrlHash();
+
+        this.$pagesLinks.removeClass('active');
+        this.$pagesLinks.filter(`[href="#${pageCode}"]`).addClass('active');
+
+        $.each(this.initPages, function (pageCode, page) {
+            page.disable();
+        });
 
         if (!this.initPages[pageCode]) {
             this.initPages[pageCode] = new pages[pageCode]().initialize();
         }
 
-        this.$pagesContainers.hide();
-        this.$pagesContainers.filter(`[data-page-code="${pageCode}"]`).show();
+        this.$pagesContainer.attr('data-page-code', pageCode).show();
+        this.initPages[pageCode].enable();
     };
 
     Main.prototype._getCurrentUrlHash = function () {

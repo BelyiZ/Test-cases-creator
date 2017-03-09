@@ -1,5 +1,24 @@
 {
     "markdown": false,
+    "groupParams": {
+        "colspan": 2,
+        "valueColspan": 5,
+        "width": "1%",
+        "rows": [
+            {
+                "code": "name",
+                "name": "Название",
+                "inInputs": true,
+                "inResult": true
+            },
+            {
+                "code": "description",
+                "name": "Описание",
+                "inInputs": true,
+                "inResult": true
+            }
+        ]
+    },
     "headerParams": {
         "rows": [
             {

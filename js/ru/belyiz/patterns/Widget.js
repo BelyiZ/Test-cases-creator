@@ -10,7 +10,7 @@
             newWidget.prototype = Object.create(Widget.prototype);
         },
 
-        parent: Widget.prototype
+        proto: Widget.prototype
     });
 
     /**

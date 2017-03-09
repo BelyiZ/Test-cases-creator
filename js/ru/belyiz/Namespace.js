@@ -27,6 +27,11 @@
 /** @namespace settings.blocks.cells.inInputs */
 /** @namespace settings.blocks.cells.inResult */
 /** @namespace settings.blocks.cells.isOrderNumber */
+/** @namespace settings.groupParams.rows.code */
+/** @namespace settings.groupParams.rows.width */
+/** @namespace settings.groupParams.rows.name */
+/** @namespace settings.groupParams.rows.inInputs */
+/** @namespace settings.groupParams.rows.inResult */
 
 /** @namespace testCaseInfo.headerValues */
 /** @namespace testCaseInfo.blocksValues */
