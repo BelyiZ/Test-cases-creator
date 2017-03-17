@@ -49,7 +49,10 @@
     };
 
     AbstractEntityInfoPage.prototype._createWidgets = function () {
-        this.entityInfoWidget = new this.pageSettings.entityInfoWidget({container: this.$content}).initialize();
+        this.entityInfoWidget = new this.pageSettings.entityInfoWidget({
+            container: this.$content,
+            entityService: this.pageSettings.entityService
+        }).initialize();
         if (!(this.entityInfoWidget instanceof global.ru.belyiz.patterns.AbstractEntityInfoWidget.clazz)) {
             throw ('Параметр entityInfoWidget должен быть типа AbstractEntityInfoWidget');
         }
@@ -117,8 +120,13 @@
 
         onRemoveButtonClick: function () {
             const entityData = this.entityInfoWidget.getData();
-            this.pageSettings.entityService.removeEntity(entityData, () => this.showEntityInfo());
-            this.showEntitiesList();
+            this.pageSettings.entityService.removeEntity(
+                entityData,
+                () => {
+                    this.showEntityInfo();
+                    this.showEntitiesList();
+                }
+            );
         },
 
         onSaveButtonClick: function () {
@@ -140,7 +148,7 @@
         onDatabaseSynchronized: function () {
             this.showEntitiesList(this.pageSettings.activeEntityId);
             if (this.pageSettings.activeEntityId) {
-                services.DatabaseService.getEntity(
+                this.pageSettings.entityService.getEntity(
                     this.pageSettings.activeEntityId,
                     entity => this.entityInfoWidget.showDifference(entity),
                     err => {
@@ -148,7 +156,7 @@
                             this.entityInfoWidget.removedOnServer();
                             this.$removeItemBtn.hide();
                         } else {
-                            services.DatabaseService.processError.call(services.DatabaseService, err)
+                            services.DatabaseService.processError.call(this.pageSettings.entityService, err)
                         }
                     }
                 );

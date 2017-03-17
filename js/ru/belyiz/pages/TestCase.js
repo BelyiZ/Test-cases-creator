@@ -20,7 +20,7 @@
             entitiesListPrepareDataFunction: this._prepareTestCasesForList,
             entityService: services.TestCasesService,
             downloadFileName: 'testCase',
-            activeEntityId: -1,
+            activeEntityId: '',
         };
     }
 
@@ -58,10 +58,7 @@
     TestCase.prototype._prepareTestCasesForList = function (docs) {
         let testCases = [];
         for (let doc of docs) {
-            let testCase = {
-                _id: doc._id,
-                _rev: doc._rev
-            };
+            let testCase = {id: doc.id, rev: doc.rev};
             for (let rowParams of doc.settings.headerParams.rows) {
                 testCase[rowParams.name] = doc.headerValues[rowParams.code];
             }

@@ -1,6 +1,6 @@
 /** @namespace window.ru.belyiz.widgets.TestCaseInfo */
 
-(function (global, Pattern, utils) {
+(function (global, Pattern, utils, widgets) {
     'use strict';
     utils.Package.declare('ru.belyiz.widgets.TestCaseInfo', TestCaseInfo);
     Pattern.extend(TestCaseInfo);
@@ -12,6 +12,7 @@
         setup = setup || {};
 
         this.$container = $(setup.container);
+        this.testCasesService = setup.entityService;
 
         this.settings = {};
         this.testCaseId = '';
@@ -30,6 +31,10 @@
             changed: 'changed',
         };
     }
+
+    TestCaseInfo.prototype._createWidgets = function () {
+        this.testCaseGroupsWidget = new widgets.TestCaseGroups({containerId: 'testCaseGroupsContainer'}).initialize();
+    };
 
     TestCaseInfo.prototype._bindEvents = function () {
         this.$container.on('click', '.js-add-item', this._events.onAddRowClick.bind(this));
@@ -60,14 +65,17 @@
     };
 
     TestCaseInfo.prototype.reDraw = function (settings, testCaseInfo, serverTestCaseInfo) {
-        this.testCaseId = testCaseInfo && testCaseInfo._id || '';
+        this.testCaseId = testCaseInfo && testCaseInfo.id || '';
         this.settings = settings;
 
-        const serverRevision = serverTestCaseInfo && serverTestCaseInfo._rev || '';
-        const localRevision = testCaseInfo && testCaseInfo._rev || '';
+        const serverRevision = serverTestCaseInfo && serverTestCaseInfo.rev || '';
+        const localRevision = testCaseInfo && testCaseInfo.rev || '';
         this.testCaseRevision = serverRevision || localRevision;
 
         this.$container.html('');
+        if (this.testCaseId) {
+            this._initGroupsBlock();
+        }
         this.$container.append(this._getHeaderRowsHtml(settings.headerParams, testCaseInfo, serverTestCaseInfo));
         for (let blockSettings of settings.blocks) {
             const localBlockValues = testCaseInfo && testCaseInfo.blocksValues && testCaseInfo.blocksValues[blockSettings.code] || false;
@@ -84,8 +92,7 @@
     };
 
     TestCaseInfo.prototype.showDifference = function (serverTestCaseInfo) {
-        // const localTestCaseInfo = this.getTestCaseData();
-        if (serverTestCaseInfo._rev && serverTestCaseInfo._rev !== this.testCaseRevision) {
+        if (serverTestCaseInfo.rev && serverTestCaseInfo.rev !== this.testCaseRevision) {
             utils.ShowNotification.static(`
                 ${this._msgChangedOnServer}
                 <div class="added-row text-left p-1">${this._msgAddedRowHint}</div>
@@ -99,15 +106,15 @@
     TestCaseInfo.prototype.removedOnServer = function () {
         utils.ShowNotification.static(this._msgRemovedFromServer, 'danger');
         let testCaseData = this.getTestCaseData();
-        testCaseData._id = '';
-        testCaseData._rev = '';
+        testCaseData.id = '';
+        testCaseData.rev = '';
         this.reDraw(this.settings, testCaseData);
     };
 
     TestCaseInfo.prototype.getData = function () {
         let testCaseData = {
-            _id: this.testCaseId,
-            _rev: this.testCaseRevision,
+            id: this.testCaseId,
+            rev: this.testCaseRevision,
             settings: this.settings,
             headerValues: {},
             blocksValues: {}
@@ -139,6 +146,21 @@
         return testCaseData;
     };
 
+    TestCaseInfo.prototype._initGroupsBlock = function () {
+        this.$container.html(`      
+            <div id="testCaseGroupsContainer">
+                <div class="d-inline-block js-test-case-groups"></div>
+                <div class="btn btn-outline-primary btn-sm js-add-into-group" role="button">
+                    <i class="fa fa-plus"></i> Добавить в группу
+                </div>
+            </div>
+        `);
+        this.testCaseGroupsWidget.setTestCaseId(this.testCaseId);
+        this.testCasesService.findGroups(this.testCaseId, groups => {
+            this.testCaseGroupsWidget.reDraw(groups);
+        });
+    };
+
     /**
      * Генерирует HTML для полей ввода шапки таблицы
      *
@@ -152,7 +174,7 @@
         testCaseInfo = testCaseInfo || {};
         serverTestCaseInfo = serverTestCaseInfo || {};
 
-        const merge = testCaseInfo._rev && serverTestCaseInfo._rev && testCaseInfo._rev !== this.testCaseRevision;
+        const merge = testCaseInfo.rev && serverTestCaseInfo.rev && testCaseInfo.rev !== this.testCaseRevision;
 
         let rowsHtml = '';
         for (let rowParam of headerParams.rows) {
@@ -264,4 +286,4 @@
         return false;
     };
 
-})(window, window.ru.belyiz.patterns.AbstractEntityInfoWidget, window.ru.belyiz.utils);
+})(window, window.ru.belyiz.patterns.AbstractEntityInfoWidget, window.ru.belyiz.utils, window.ru.belyiz.widgets);

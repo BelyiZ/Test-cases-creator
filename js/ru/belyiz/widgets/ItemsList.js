@@ -71,16 +71,16 @@
             for (let item of items) {
                 const $itemsContainer = $('<div class="d-inline-block full-width"></div>');
                 $.each(item, (key, value) => {
-                    if (!key.startsWith('_')) {
+                    if (!key.startsWith('_') && key !== 'id' && key !== 'rev') {
                         $itemsContainer.append(`<div class="text-truncate"><small><b>${key}:</b></small> ${value}</div>`);
                     }
                 });
 
-                const isActive = currentItemId && currentItemId === item._id;
+                const isActive = currentItemId && currentItemId === item.id;
                 const $listGroupItem = $(`
                     <div class="list-group-item list-group-item-action js-items-list-item ${isActive ? 'active' : ''}" role="button"
-                         data-item-id="${item._id}"
-                         data-item-rev="${item._rev}">
+                         data-item-id="${item.id}"
+                         data-item-rev="${item.rev}">
                          <div class="collapse align-top cases-list-checkbox"><i class="fa fa-square-o align-middle js-checkbox"/></div>
                     </div>
                 `);

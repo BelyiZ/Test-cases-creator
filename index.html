@@ -27,24 +27,26 @@
         </button>
         <h1 class="navbar-brand mb-0">Генератор тест-кейсов</h1>
         <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="nav nav-pills">
-                <li class="nav-item">
-                    <a class="nav-link active js-nav-link" href="#TestCase">Тест-кейсы</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link js-nav-link" href="#Group">Группы</a>
-                </li>
-            </ul>
-        </div>
-        <div class="btn-group mt-2" role="group">
-            <button type="button" class="btn btn-outline-warning js-settings-button">
-                <i class="fa fa-edit"></i>
-                Настроить
-            </button>
-            <button type="button" class="btn btn-outline-warning js-change-db-button">
-                <i class="fa fa-database"></i>
-                Сменить БД <i class="badge badge-warning badge-pill js-current-db js-current-db"></i>
-            </button>
+            <div class="w-100">
+                <ul class="nav nav-pills mt-1 float-lg-left">
+                    <li class="nav-item">
+                        <a class="nav-link active js-nav-link" href="#TestCase">Тест-кейсы</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link js-nav-link" href="#Group">Группы</a>
+                    </li>
+                </ul>
+                <div class="btn-group mt-1 float-lg-right" role="group">
+                    <button type="button" class="btn btn-outline-warning js-settings-button">
+                        <i class="fa fa-edit"></i>
+                        Настроить
+                    </button>
+                    <button type="button" class="btn btn-outline-warning js-change-db-button">
+                        <i class="fa fa-database"></i>
+                        Сменить БД <i class="badge badge-warning badge-pill js-current-db js-current-db"></i>
+                    </button>
+                </div>
+            </div>
         </div>
     </nav>
 </div>
@@ -117,6 +119,7 @@
 <script src="js/tether.min.js"></script>
 <script src="js/bootstrap.min.js"></script>
 <script src="js/pouchdb-6.1.0.min.js"></script>
+<script src="js/pouchdb.relational-pouch.min.js"></script>
 <script src="js/showdown.min.js"></script>
 <script src="js/bootstrap-notify.min.js"></script>
 
@@ -146,6 +149,8 @@
 <script src="js/ru/belyiz/widgets/VerticalMenu.js"></script>
 <script src="js/ru/belyiz/widgets/Modal.js"></script>
 <script src="js/ru/belyiz/widgets/GroupInfo.js"></script>
+<script src="js/ru/belyiz/widgets/ItemsListModal.js"></script>
+<script src="js/ru/belyiz/widgets/TestCaseGroups.js"></script>
 
 <script src="js/ru/belyiz/services/DatabaseService.js"></script>
 <script src="js/ru/belyiz/services/TestCasesService.js"></script>

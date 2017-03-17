@@ -21,17 +21,14 @@
             entitiesListPrepareDataFunction: this._prepareGroupsForList,
             entityService: services.GroupsService,
             downloadFileName: 'testCasesGroup',
-            activeEntityId: -1,
+            activeEntityId: '',
         };
     }
 
     Group.prototype._prepareGroupsForList = function (docs) {
         let groups = [];
         for (let doc of docs) {
-            let group = {
-                _id: doc._id,
-                _rev: doc._rev
-            };
+            let group = {id: doc.id, rev: doc.rev};
             for (let rowParams of doc.settings.groupParams.rows) {
                 group[rowParams.name] = doc.headerValues[rowParams.code];
             }

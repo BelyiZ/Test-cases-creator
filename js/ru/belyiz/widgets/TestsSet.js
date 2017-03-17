@@ -37,7 +37,7 @@
                 }
 
                 this.$container.append(`
-                    <div class="list-group-item draggable js-test-case-item mt-2" data-test-case-id="${testCase._id}">
+                    <div class="list-group-item draggable js-test-case-item mt-2" data-test-case-id="${testCase.id}">
                          <div class="align-top d-inline-block"><i class="fa fa-arrows-v big-icon mt-2 mr-3"></i></div>
                          <div class="d-inline-block">${html}</div>
                     </div>

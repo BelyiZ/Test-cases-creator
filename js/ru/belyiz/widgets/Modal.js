@@ -14,7 +14,9 @@
         this.title = setup.title || '';
         this.contentHtml = setup.contentHtml || '';
         this.applyBtnText = setup.applyBtnText || 'Применить';
+        this.hideApplyBtn = !!setup.hideApplyBtn;
         this.cancelBtnText = setup.cancelBtnText || 'Отмена';
+        this.hideCancelBtn = !!setup.hideCancelBtn;
         this.closable = !!setup.closable;
 
         this._eventHandlers = {};
@@ -82,8 +84,11 @@
                         </div>
                         <div class="modal-body">${this.contentHtml}</div>
                         <div class="modal-footer">
-                            <button type="button" class="btn btn-primary js-apply-btn">${this.applyBtnText}</button>
-                            <button type="button" class="btn btn-secondary js-cancel-btn" data-dismiss="modal">${this.cancelBtnText}</button>
+                            <button type="button" ${this.hideApplyBtn ? 'hidden' : ''}
+                                    class="btn btn-primary js-apply-btn">${this.applyBtnText}</button>
+                            <button type="button" ${this.hideCancelBtn ? 'hidden' : ''}
+                                    class="btn btn-secondary js-cancel-btn"
+                                    data-dismiss="modal">${this.cancelBtnText}</button>
                         </div>
                     </div>
                 </div>

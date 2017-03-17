@@ -54,7 +54,7 @@
     ItemsListModal.prototype._events = {
         onItemClick: function (e) {
             const $target = $(e.currentTarget);
-            this.trigger(this._eventNames, {name: $target.text(), code: $target.data('itemCode')});
+            this.trigger(this._eventNames.selected, {name: $target.text(), code: $target.data('itemCode')});
             this.hide();
         }
     };
@@ -76,10 +76,10 @@
         for (let item of items) {
             itemsHtml += `
                 <div class="list-group-item list-group-item-action" 
-                      role="button" data-item-code="${item.code || ''}">${item.name || item}</div>
+                      role="button" data-item-code="${item.code || ''}">${item.name || ($.type(item) === 'string' ? item : '<i>Без названия</i>')}</div>
             `;
         }
-        this.modal.setContentHtml(`<div class="list-group" data-modal-id="${this.modalId}">${itemsHtml}</div>`);
+        this.modal.setContentHtml(`<div class="list-group" data-modal-id="${this.modalId}">${itemsHtml || this.emptyMsg}</div>`);
 
         if (showOnFinish) {
             this.show();

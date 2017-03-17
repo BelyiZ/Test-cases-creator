@@ -60,7 +60,7 @@
     SettingsModal.prototype._events = {
         onSaveClick: function () {
             let settingsJson = JSON.parse(this.$settingsArea.val());
-            settingsJson._rev = this.$settingsArea.data('_rev');
+            settingsJson.rev = this.$settingsArea.data('rev');
             this.trigger(this._eventNames.save, settingsJson);
             this.$modal.modal('hide');
         }
@@ -72,12 +72,12 @@
      */
     SettingsModal.prototype.show = function (settingsJson) {
         let json = $.extend(true, {}, settingsJson);
-        delete json._id;
-        delete json._rev;
+        delete json.id;
+        delete json.rev;
         this.$settingsArea.val(JSON.stringify(json, null, 4));
         utils.InputsUtils.selectRange(this.$settingsArea.get(0), 0);
 
-        this.$settingsArea.data('_rev', settingsJson._rev);
+        this.$settingsArea.data('rev', settingsJson.rev);
         this.$modal.modal('show');
     }
 

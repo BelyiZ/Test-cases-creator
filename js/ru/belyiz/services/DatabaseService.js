@@ -17,6 +17,23 @@
         this.remoteDB = null;
         this.settingsDocId = 'params';
 
+        this.schema = [
+            {singular: 'settings', plural: 'settings'},
+            {singular: 'testCases', plural: 'testCases'},
+            {singular: 'groups', plural: 'groups', relations: {testCases: {hasMany: 'testCases'}}}
+        ];
+
+        this.index = {
+            _id: '_design/myIndex',
+            views: {
+                groupsByTestCaseId: {
+                    map: 'function(doc) { ' +
+                    '   for (let id of doc.data.testCases) { emit(id); }' +
+                    '}'
+                }
+            }
+        };
+
         this.remoteDbUrl = 'http://testcasecreator-vrn/couchdb';
 
         this.initialized = false;
@@ -44,11 +61,25 @@
                 this.remoteDbSettingsRev = doc._rev;
                 if (doc.name) {
                     this.localDB = new PouchDB(doc.name, {revs_limit: 10});
-                    if (!doc.local) {
+                    this.localDB.setSchema(this.schema);
+                    this.localDB
+                        .put(this.index)
+                        .catch(err => {
+                            if (err.name !== 'conflict') {
+                                this.processError(err);
+                            }
+                        });
+
+                    const finishInitialization = function () {
+                        this.initialized = true;
+                        this.trigger(this._eventNames.dbChanged, {local: !!doc.local, name: doc.name});
+                    }.bind(this);
+                    if (doc.local) {
+                        this.getSettings(finishInitialization);
+                    } else {
                         this._initSync(doc.name);
+                        finishInitialization();
                     }
-                    this.initialized = true;
-                    this.trigger(this._eventNames.dbChanged, {local: !!doc.local, name: doc.name});
                 } else {
                     this.showDbChoosingDialog();
                 }
@@ -129,6 +160,10 @@
         });
     };
 
+    /**
+     * Обработка ошибок возникающих во время работы с базой данных или коллбэках
+     * @param err информация об ошибке
+     */
     DatabaseService.prototype.processError = function (err) {
         if (!err.status) {
             utils.ShowNotification.error(this._msgNonDatabaseError + err);
@@ -142,74 +177,152 @@
 
     /**
      * Получаем из базы данных настройки проекта, если их нет - загружаем значения по умолчанию из файла
-     * @param callback функция, которая выполнить в случае успешной инициализации настроекд
+     * @param callback функция, которая выполнить в случае успешной инициализации настроек
      * @param errorCallback функция, которая выполнить в случае ошибки
      */
     DatabaseService.prototype.getSettings = function (callback, errorCallback) {
-        this.localDB.get(this.settingsDocId)
-            .then(typeof callback === 'function' && callback)
-            .catch((err) => {
-                if (err.status === 404) {
-                    $.getJSON('defaultSettings.json', function (json) {
-                        this.saveSettings(json, () => typeof successCallback === 'function' && successCallback());
-                    }.bind(this));
+        this.getEntity(
+            'settings', this.settingsDocId,
+            doc => {
+                if (doc) {
+                    typeof callback === 'function' && callback(doc);
                 } else {
-                    typeof errorCallback === 'function' && errorCallback() || this.processError.bind(this);
+                    $.getJSON('defaultSettings.json', (json) => this.saveSettings(json, callback));
                 }
-            });
+            },
+            errorCallback
+        );
     };
 
+    /**
+     * Сохранение новых значений настроек в базе данных
+     * @param settings новые настройки
+     * @param callback функция, которая выполнить в случае успешной инициализации настроек
+     * @param errorCallback функция, которая выполнить в случае ошибки
+     */
     DatabaseService.prototype.saveSettings = function (settings, callback, errorCallback) {
-        settings._id = this.settingsDocId;
-        this.saveEntity('', settings, callback, errorCallback);
+        settings.id = this.settingsDocId;
+        this.saveEntity('settings', settings, callback, errorCallback);
     };
 
-    DatabaseService.prototype.getEntity = function (id, callback, errorCallback) {
-        this.localDB.get(id)
+    /**
+     * Выполнение запроса по построенному индексу
+     * @param indexName название индекса
+     * @param options параметры запроса
+     * @param callback функция, которая выполнить в случае успешной инициализации настроек
+     * @param errorCallback функция, которая выполнить в случае ошибки
+     */
+    DatabaseService.prototype.indexQuery = function (indexName, options, callback, errorCallback) {
+        this.localDB.query(indexName, options)
             .then(callback)
-            .catch(typeof errorCallback === 'function' && errorCallback || this.processError.bind(this));
+            .catch((typeof errorCallback === 'function' && errorCallback) || this.processError.bind(this));
     };
 
-    DatabaseService.prototype.saveEntity = function (idPrefix, data, callback, errorCallback) {
-        if (!data._id) {
-            delete data._id;
-            delete data._rev;
+    /**
+     * Запрос данных сущности по ее типу и идентификатору.
+     * Возвращаются только сами данных сущности, все дочерние элементы откидываются
+     * @param type тип сущности
+     * @param id идентификатор сущности
+     * @param callback функция, которая выполнить в случае успешной инициализации настроек
+     * @param errorCallback функция, которая выполнить в случае ошибки
+     */
+    DatabaseService.prototype.getEntity = function (type, id, callback, errorCallback) {
+        this.localDB.rel.find(type, id)
+            .then(result => callback(result[type].length ? result[type][0] : null))
+            .catch((typeof errorCallback === 'function' && errorCallback) || this.processError.bind(this));
+    };
+
+    /**
+     * Запрос данных сущности по ее типу и идентификатору.
+     * Возвращаются данные самой сущности, а так же данные сущностей, которые к ней относятся
+     * @param type тип сущности
+     * @param id идентификатор сущности
+     * @param callback функция, которая выполнить в случае успешной инициализации настроек
+     * @param errorCallback функция, которая выполнить в случае ошибки
+     */
+    DatabaseService.prototype.getEntityWithRelations = function (type, id, callback, errorCallback) {
+        this.localDB.rel.find(type, id)
+            .then(callback)
+            .catch((typeof errorCallback === 'function' && errorCallback) || this.processError.bind(this));
+    };
+
+    /**
+     * Сохранение сущности в базе данных
+     * @param type тип сущности
+     * @param data данные сущности
+     * @param callback функция, которая выполнить в случае успешной инициализации настроек
+     * @param errorCallback функция, которая выполнить в случае ошибки
+     */
+    DatabaseService.prototype.saveEntity = function (type, data, callback, errorCallback) {
+        if (!data.id) {
+            delete data.id;
+            delete data.rev;
             delete data.hash;
 
             data.hash = this._generateHash(data);
-            data._id = idPrefix + data.hash + Math.random();
+            data.id = $.now();
         }
 
-        this.localDB.put(data)
-            .then((response) => typeof callback === 'function' && callback(response))
-            .catch(typeof errorCallback === 'function' && errorCallback || this.processError.bind(this));
+        this.localDB.rel.save(type, data)
+            .then((result) => typeof callback === 'function' && callback(result[type].length ? result[type][0] : {}))
+            .catch((typeof errorCallback === 'function' && errorCallback) || this.processError.bind(this));
     };
 
-    DatabaseService.prototype.removeEntity = function (data, callback, errorCallback) {
-        this.localDB.remove(data)
+    /**
+     * Удаление сущности из базе данных
+     * @param type тип сущности
+     * @param data данные сущности. Объект должен содержать id и rev параметры!
+     * @param callback функция, которая выполнить в случае успешной инициализации настроек
+     * @param errorCallback функция, которая выполнить в случае ошибки
+     */
+    DatabaseService.prototype.removeEntity = function (type, data, callback, errorCallback) {
+        this.localDB.rel.del(type, data)
             .then(() => typeof callback === 'function' && callback())
-            .catch(typeof errorCallback === 'function' && errorCallback || this.processError.bind(this));
+            .catch((typeof errorCallback === 'function' && errorCallback) || this.processError.bind(this));
     };
 
-    DatabaseService.prototype.allDocs = function (idPrefix, ids, callback, errorCallback) {
-        let queryParams = {include_docs: true};
-        if (ids && ids.length) {
-            queryParams.keys = ids;
-        } else {
-            queryParams.startkey = idPrefix;
-            queryParams.endkey = idPrefix + '\uffff';
-        }
+    /**
+     * Запрос всех сущностей одного типа
+     * @param type тип сущности
+     * @param callback функция, которая выполнить в случае успешной инициализации настроек
+     * @param errorCallback функция, которая выполнить в случае ошибки
+     */
+    DatabaseService.prototype.allDocs = function (type, callback, errorCallback) {
+        this.localDB.rel
+            .find(type)
+            .then(result => callback(result[type]))
+            .catch((typeof errorCallback === 'function' && errorCallback) || this.processError.bind(this));
+    };
 
-        this.localDB
-            .allDocs(queryParams)
-            .then(function (result) {
-                let docs = [];
-                for (let row of result.rows) {
-                    docs.push(row.doc);
-                }
-                callback(docs);
-            })
-            .catch(typeof errorCallback === 'function' && errorCallback || this.processError.bind(this));
+    /**
+     * Запрос сущностей одного типа по списку идентификаторов
+     * @param type тип сущности
+     * @param ids список идентификаторов
+     * @param callback функция, которая выполнить в случае успешной инициализации настроек
+     * @param errorCallback функция, которая выполнить в случае ошибки
+     */
+    DatabaseService.prototype.someDocs = function (type, ids, callback, errorCallback) {
+        this.localDB.rel
+            .find(type, ids)
+            .then(result => callback(result[type]))
+            .catch((typeof errorCallback === 'function' && errorCallback) || this.processError.bind(this));
+    };
+
+    /**
+     * Получение числового идентификатора сущности по комплексному (от relational-pouch)
+     * @param id комплексный идентификатор сущности
+     */
+    DatabaseService.prototype.parseId = function (id) {
+        return this.localDB.rel.parseDocID(id).id;
+    };
+
+
+    /**
+     * Получение типа сущности по комплексному идентификатору (от relational-pouch)
+     * @param id комплексный идентификатор сущности
+     */
+    DatabaseService.prototype.parseType = function (id) {
+        return this.localDB.rel.parseDocID(id).type;
     };
 
     /**

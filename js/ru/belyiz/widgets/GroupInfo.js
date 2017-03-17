@@ -30,22 +30,24 @@
 
     GroupInfo.prototype._events = {};
 
-    GroupInfo.prototype.reDraw = function (settings, groupInfo, serverGroupInfo) {
-        this.groupId = groupInfo && groupInfo._id || '';
-        this.settings = settings;
+    GroupInfo.prototype.reDraw = function (settings, localData, serverData) {
+        const groupInfo = localData && localData.group;
+        const localRevision = (groupInfo && groupInfo.rev) || '';
+        const serverGroupInfo = serverData && serverData.group;
+        const serverRevision = (serverGroupInfo && serverGroupInfo.rev) || '';
 
-        const serverRevision = serverGroupInfo && serverGroupInfo._rev || '';
-        const localRevision = groupInfo && groupInfo._rev || '';
+        this.groupId = (groupInfo && groupInfo.id) || '';
+        this.settings = settings;
         this.groupRevision = serverRevision || localRevision;
 
         this.$container.html('');
         this.$container.append(this._getGroupInfoRowsHtml(settings.groupParams, groupInfo, serverGroupInfo));
-        this.$container.append(this._getTestCasesBlockHtml(settings.groupParams, groupInfo, serverGroupInfo));
+        this.$container.append(this._getTestCasesBlockHtml(settings.groupParams, localData, serverData));
     };
 
     // GroupInfo.prototype.showDifference = function (serverGroupInfo) {
     //     // const localGroupInfo = this.getTestCaseData();
-    //     if (serverGroupInfo._rev && serverGroupInfo._rev !== this.testCaseRevision) {
+    //     if (serverGroupInfo.rev && serverGroupInfo.rev !== this.testCaseRevision) {
     //         utils.ShowNotification.static(`
     //             ${this._msgChangedOnServer}
     //             <div class="added-row text-left p-1">${this._msgAddedRowHint}</div>
@@ -59,15 +61,15 @@
     // GroupInfo.prototype.removedOnServer = function () {
     //     utils.ShowNotification.static(this._msgRemovedFromServer, 'danger');
     //     let testCaseData = this.getTestCaseData();
-    //     testCaseData._id = '';
-    //     testCaseData._rev = '';
+    //     testCaseData.id = '';
+    //     testCaseData.rev = '';
     //     this.reDraw(this.settings, testCaseData);
     // };
 
     GroupInfo.prototype.getData = function () {
         let groupData = {
-            _id: this.groupId,
-            _rev: this.groupRevision,
+            id: this.groupId,
+            rev: this.groupRevision,
             settings: this.settings,
             headerValues: {},
             testCases: []
@@ -85,11 +87,11 @@
     };
 
     /**
-     * Генерирует HTML для полей ввода шапки таблицы
+     * Генерирует HTML для полей ввода инфорации о группе
      *
-     * @param groupParams параметры полей ввода шапки таблицы
-     * @param groupInfo данные локально-сохраненного тест-кейса, подставляются в поля ввода
-     * @param serverGroupInfo данные серверной версии тест-кейса, используются для отображения разницы, при редактировании не последней версии
+     * @param groupParams параметры полей ввода инфорации о группе
+     * @param groupInfo данные локально-сохраненной группы, подставляются в поля ввода
+     * @param serverGroupInfo данные серверной версии группы, используются для отображения разницы, при редактировании не последней версии
      * @returns {string}
      * @private
      */
@@ -97,7 +99,7 @@
         groupInfo = groupInfo || {};
         serverGroupInfo = serverGroupInfo || {};
 
-        const merge = groupInfo._rev && serverGroupInfo._rev && groupInfo._rev !== this.groupRevision;
+        const merge = groupInfo.rev && serverGroupInfo.rev && groupInfo.rev !== this.groupRevision;
 
         let rowsHtml = '';
         for (let rowParam of groupParams.rows) {
@@ -127,33 +129,36 @@
         `;
     };
 
-    GroupInfo.prototype._getTestCasesBlockHtml = function (blockSettings, localTestCases, serverTestCases, merge) {
-        localTestCases = localTestCases || [];
-        serverTestCases = serverTestCases || [];
-
+    GroupInfo.prototype._getTestCasesBlockHtml = function (blockSettings, localData, serverData, merge) {
+        const groupInfo = (localData && localData.group) || {};
+        const localTestCases = (localData && localData.testCases) || {};
+        const serverGroupInfo = (serverData && serverData.group) || {};
+        const serverTestCases = (serverData && serverData.testCases) || {};
         const $casesContainer = $('<div></div>');
+        const rowsCount = Math.max(Object.keys(localTestCases).length, Object.keys(serverTestCases).length);
 
-        const rowsCount = Math.max(localTestCases.length, serverTestCases.length);
         if (rowsCount > 0) {
             for (let i = 0; i < rowsCount; i++) {
-                const localTestCase = utils.ArraysUtils.getOfDefault(localTestCases, i, false);
-                // const serverTestCase = utils.ArraysUtils.getOfDefault(serverTestCases, i, false);
-                let html = '';
-                for (let rowParam of localTestCase.settings.headerParams.rows) {
-                    html += `
-                        <div>
-                            <small><b>${rowParam.name}:</b></small>
-                            ${testCase.headerValues[rowParam.code]}
-                        </div>
-                    `;
-                }
+                const localTestCase = localTestCases[utils.ArraysUtils.getOfDefault(groupInfo.testCases, i, '')];
+                // const serverTestCase = serverTestCases[utils.ArraysUtils.getOfDefault(serverGroupInfo.testCases, i, false)];
+                if (localTestCase) {
+                    let html = '';
+                    for (let rowParam of localTestCase.settings.headerParams.rows) {
+                        html += `
+                            <div>
+                                <small><b>${rowParam.name}:</b></small>
+                                ${localTestCase.headerValues[rowParam.code]}
+                            </div>
+                        `;
+                    }
 
-                $casesContainer.append(`
-                    <div class="list-group-item draggable js-test-case-item mt-2" data-test-case-id="${localTestCase._id}">
-                         <div class="align-top d-inline-block"><i class="fa fa-arrows-v big-icon mt-2 mr-3"></i></div>
-                         <div class="d-inline-block">${html}</div>
-                    </div>
-                `);
+                    $casesContainer.append(`
+                        <div class="list-group-item draggable js-test-case-item mt-2" data-test-case-id="${localTestCase.id}">
+                             <div class="align-top d-inline-block"><i class="fa fa-arrows-v big-icon mt-2 mr-3"></i></div>
+                             <div class="d-inline-block">${html}</div>
+                        </div>
+                    `);
+                }
             }
 
             $casesContainer.sortable({
