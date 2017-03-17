@@ -65,7 +65,7 @@
 
         for (let i = 0; i < handlers.length; i++) {
             if (handlers[i].handler === handler) {
-                handlers.splice(i - 1, 1);
+                handlers.splice(i, 1);
             }
         }
     };
