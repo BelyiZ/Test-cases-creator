@@ -152,7 +152,7 @@
                     this.pageSettings.activeEntityId,
                     entity => this.entityInfoWidget.showDifference(entity),
                     err => {
-                        if (err.status === 404 && err.reason === 'deleted') {
+                        if (err.status === 404) {
                             this.entityInfoWidget.removedOnServer();
                             this.$removeItemBtn.hide();
                         } else {
@@ -175,7 +175,7 @@
             // this.resultTableWidget.reDraw([this.groupInfoWidget.getGroupData()]);
         }
 
-        this.activeEntityId = id || '';
+        this.pageSettings.activeEntityId = id || '';
 
         if (id) {
             this.pageSettings.entityService.getEntity(id, entity => onSuccess.call(this, entity.settings, entity));
