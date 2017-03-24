@@ -18,10 +18,14 @@
         this.groupRevision = '';
 
         this.msgNoOneTestSelected = 'В группе нет ни одного тест-кейса';
+        this._msgMergeConflict = 'Данные на сервере изменились. ';
+        this._msgServerFieldEmpty = 'Значение этого поля было удалено.';
+        this._msgActualFieldValue = 'Актуальный текст:\n';
+        this._msgRemovedFromServer = 'Редактируемая группа была удалена с сервера. Если сохранить изменения - это будет эквивалентно созданию новой.';
 
         this._eventHandlers = {};
         this._eventNames = {
-            changed: 'changed',
+            testCasesReordered: 'testCasesReordered',
         };
     }
 
@@ -42,29 +46,21 @@
 
         this.$container.html('');
         this.$container.append(this._getGroupInfoRowsHtml(settings.groupParams, groupInfo, serverGroupInfo));
-        this.$container.append(this._getTestCasesBlockHtml(settings.groupParams, localData, serverData));
+        this.$container.append(this._getTestCasesBlockHtml(serverData || localData));
     };
 
-    // GroupInfo.prototype.showDifference = function (serverGroupInfo) {
-    //     // const localGroupInfo = this.getTestCaseData();
-    //     if (serverGroupInfo.rev && serverGroupInfo.rev !== this.testCaseRevision) {
-    //         utils.ShowNotification.static(`
-    //             ${this._msgChangedOnServer}
-    //             <div class="added-row text-left p-1">${this._msgAddedRowHint}</div>
-    //             <div class="removed-row text-left p-1">${this._msgRemovedRowHint}</div>
-    //         `, 'warning');
-    //
-    //         this.reDraw(this.settings, this.getTestCaseData(), serverGroupInfo);
-    //     }
-    // };
+    GroupInfo.prototype.showDifference = function (serverData) {
+        if (serverData.group && serverData.group.rev && serverData.group.rev !== this.groupRevision) {
+            const localData = {group: this.getData()};
+            this.reDraw(this.settings, localData, serverData, true);
+        }
+    };
 
-    // GroupInfo.prototype.removedOnServer = function () {
-    //     utils.ShowNotification.static(this._msgRemovedFromServer, 'danger');
-    //     let testCaseData = this.getTestCaseData();
-    //     testCaseData.id = '';
-    //     testCaseData.rev = '';
-    //     this.reDraw(this.settings, testCaseData);
-    // };
+    GroupInfo.prototype.removedOnServer = function () {
+        utils.ShowNotification.static(this._msgRemovedFromServer, 'danger');
+        this.groupId = '';
+        this.groupRevision = '';
+    };
 
     GroupInfo.prototype.getData = function () {
         let groupData = {
@@ -129,41 +125,48 @@
         `;
     };
 
-    GroupInfo.prototype._getTestCasesBlockHtml = function (blockSettings, localData, serverData, merge) {
-        const groupInfo = (localData && localData.group) || {};
-        const localTestCases = (localData && localData.testCases) || {};
-        const serverGroupInfo = (serverData && serverData.group) || {};
-        const serverTestCases = (serverData && serverData.testCases) || {};
-        const $casesContainer = $('<div></div>');
-        const rowsCount = Math.max(Object.keys(localTestCases).length, Object.keys(serverTestCases).length);
+    /**
+     * Генерирует HTML блока со списком тест-кейсов, входящих в группу
+     *
+     * @param groupDВфефданные группы и всех ее тест-кейсов
+     * @returns {string} сформированный HTML блока
+     * @private
+     */
+    GroupInfo.prototype._getTestCasesBlockHtml = function (groupData) {
+        const groupInfo = (groupData && groupData.group) || {};
+        const testCases = (groupData && groupData.testCases) || {};
 
-        if (rowsCount > 0) {
-            for (let i = 0; i < rowsCount; i++) {
-                const localTestCase = localTestCases[utils.ArraysUtils.getOfDefault(groupInfo.testCases, i, '')];
-                // const serverTestCase = serverTestCases[utils.ArraysUtils.getOfDefault(serverGroupInfo.testCases, i, false)];
-                if (localTestCase) {
+        const $casesContainer = $('<div></div>');
+
+        if (testCases && groupInfo.testCases && groupInfo.testCases.length > 0) {
+            for (let testCaseId of groupInfo.testCases) {
+                const testCase = testCases[testCaseId];
+                if (testCase) {
                     let html = '';
-                    for (let rowParam of localTestCase.settings.headerParams.rows) {
+                    for (let rowParam of testCase.settings.headerParams.rows) {
                         html += `
                             <div>
                                 <small><b>${rowParam.name}:</b></small>
-                                ${localTestCase.headerValues[rowParam.code]}
+                                ${testCase.headerValues[rowParam.code]}
                             </div>
                         `;
                     }
 
                     $casesContainer.append(`
-                        <div class="list-group-item draggable js-test-case-item mt-2" data-test-case-id="${localTestCase.id}">
+                        <div class="list-group-item draggable js-test-case-item mt-2" data-test-case-id="${testCase.id}">
                              <div class="align-top d-inline-block"><i class="fa fa-arrows-v big-icon mt-2 mr-3"></i></div>
                              <div class="d-inline-block">${html}</div>
                         </div>
                     `);
                 }
             }
-
             $casesContainer.sortable({
                 items: ">.draggable",
-                update: () => this.trigger(this._eventNames.changed, this._getTestsCasesIds())
+                update: () => this.trigger(this._eventNames.testCasesReordered, {
+                    testCases: $.map(this.$container.find('.js-test-case-item'), (obj) => $(obj).data('testCaseId')),
+                    id: this.groupId,
+                    rev: this.groupRevision
+                })
             });
         } else {
             $casesContainer.html(`<div class="alert alert-info mt-2">${this.msgNoOneTestSelected}</div>`);

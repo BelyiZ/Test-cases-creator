@@ -25,6 +25,21 @@
         };
     }
 
+    Group.prototype._bindEvents = function () {
+        Pattern.clazz.prototype._bindEvents.call(this);
+
+        this.entityInfoWidget.on('testCasesReordered', this._events.onTestCasesReordered, this);
+    };
+
+    Group.prototype._events = $.extend({
+        onTestCasesReordered: function (data) {
+            services.GroupsService.setTestCases(data.id, data.testCases, () => {
+                this.showEntityInfo(this.pageSettings.activeEntityId)
+            });
+        },
+
+    }, Pattern.clazz.prototype._events);
+
     Group.prototype._prepareGroupsForList = function (docs) {
         let groups = [];
         for (let doc of docs) {
