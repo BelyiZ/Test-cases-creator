@@ -46,7 +46,7 @@
 
         onDownloadButtonClick: function (e) {
             const $target = $(e.currentTarget);
-            utils.TableToFileConverter.convert(this.$resultTable, this.downloadFileName, $target.data('fileType'));
+            utils.TableToFileConverter.convert(this.$resultTable, this.pageSettings.downloadFileName, $target.data('fileType'));
         },
 
         onTextAreaKeyup: function (e) {
