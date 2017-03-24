@@ -30,7 +30,7 @@
 
     TestCaseGroups.prototype._bindEvents = function () {
         global.nodes.body.on('click', `#${this.containerId} .js-add-into-group`, this._events.onAddIntoGroupClick.bind(this));
-        global.nodes.body.on('click', `#${this.containerId} .js-remove-from-group`, this._events.onRemoveFromGroupGroupClick.bind(this));
+        global.nodes.body.on('click', `#${this.containerId} .js-remove-from-group`, this._events.onRemoveFromGroupClick.bind(this));
 
         this.groupsModal.on('selected', this._events.onGroupSelected, this);
     };
@@ -49,10 +49,11 @@
             global.ru.belyiz.services.GroupsService.addTestCase(data.code, this.testCaseId, this._addGroupBadge.bind(this));
         },
 
-        onRemoveFromGroupGroupClick: function (e) {
+        onRemoveFromGroupClick: function (e) {
             const $target = $(e.currentTarget);
-            global.ru.belyiz.services.GroupsService.removeTestCase($target.data('groupId'), this.testCaseId, () => {
-                this.usedGroups.splice($.inArray(this.testCaseId, this.usedGroups), 1);
+            const groupId = $target.data('groupId');
+            global.ru.belyiz.services.GroupsService.removeTestCase(groupId, this.testCaseId, () => {
+                this.usedGroups.splice($.inArray(groupId, this.usedGroups), 1);
                 $target.closest('.badge').remove();
             });
         },
