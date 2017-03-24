@@ -99,13 +99,13 @@
                 <div class="removed-row text-left p-1">${this._msgRemovedRowHint}</div>
             `, 'warning');
 
-            this.reDraw(this.settings, this.getTestCaseData(), serverTestCaseInfo);
+            this.reDraw(this.settings, this.getData(), serverTestCaseInfo);
         }
     };
 
     TestCaseInfo.prototype.removedOnServer = function () {
         utils.ShowNotification.static(this._msgRemovedFromServer, 'danger');
-        let testCaseData = this.getTestCaseData();
+        let testCaseData = this.getData();
         testCaseData.id = '';
         testCaseData.rev = '';
         this.reDraw(this.settings, testCaseData);
