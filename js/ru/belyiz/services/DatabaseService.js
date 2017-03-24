@@ -28,7 +28,11 @@
             views: {
                 groupsByTestCaseId: {
                     map: 'function(doc) { ' +
-                    '   for (let id of doc.data.testCases) { emit(id); }' +
+                    '   if (doc && doc.data && doc.data.testCases) {' +
+                    '      for (let id of doc.data.testCases) { ' +
+                    '         emit(id); ' +
+                    '      }' +
+                    '   }' +
                     '}'
                 }
             }
@@ -63,7 +67,11 @@
                     this.localDB = new PouchDB(doc.name, {revs_limit: 10});
                     this.localDB.setSchema(this.schema);
                     this.localDB
-                        .put(this.index)
+                        .get(this.index._id)
+                        .then((doc) => {
+                            this.index._rev = doc._rev;
+                            this.localDB.put(this.index)
+                        })
                         .catch(err => {
                             if (err.name !== 'conflict') {
                                 this.processError(err);
@@ -148,15 +156,22 @@
     };
 
     DatabaseService.prototype.showDbChoosingDialog = function () {
-        $.get(this.remoteDbUrl + '/_all_dbs', (data) => {
-            const $dbsList = $('<div class="list-group"></div>');
-            for (let dbName of data) {
-                if (!dbName.startsWith('_')) {
-                    $dbsList.append(`<div class="list-group-item list-group-item-action js-db-name-item" role="button">${dbName}</div>`);
+        $.ajax({
+            url: this.remoteDbUrl + '/_all_dbs',
+            dataType: 'json',
+            type: 'GET',
+            cache: false,
+            contentType: 'application/json',
+            success: (data) => {
+                const $dbsList = $('<div class="list-group"></div>');
+                for (let dbName of data) {
+                    if (!dbName.startsWith('_')) {
+                        $dbsList.append(`<div class="list-group-item list-group-item-action js-db-name-item" role="button">${dbName}</div>`);
+                    }
                 }
+                this.dbChoosingModal.setContentHtml($dbsList[0].outerHTML);
+                this.dbChoosingModal.show();
             }
-            this.dbChoosingModal.setContentHtml($dbsList[0].outerHTML);
-            this.dbChoosingModal.show();
         });
     };
 
@@ -228,7 +243,13 @@
      */
     DatabaseService.prototype.getEntity = function (type, id, callback, errorCallback) {
         this.localDB.rel.find(type, id)
-            .then(result => callback(result[type].length ? result[type][0] : null))
+            .then(result => {
+                if (result[type] && result[type].length) {
+                    typeof callback === 'function' && callback(result[type][0]);
+                } else {
+                    typeof errorCallback === 'function' && errorCallback({status: 404});
+                }
+            })
             .catch((typeof errorCallback === 'function' && errorCallback) || this.processError.bind(this));
     };
 
