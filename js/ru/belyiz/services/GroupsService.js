@@ -12,16 +12,22 @@
 
     GroupsService.prototype.getEntity = function (id, callback, errorCallback) {
         services.DatabaseService.getEntityWithRelations(this.groupIdPrefis, id, response => {
-            const groupData = (response[this.groupIdPrefis].length ? response[this.groupIdPrefis][0] : null);
-            let testCases = {};
-            for (let testCase of response[services.TestCasesService.testCaseIdPrefix] || []) {
-                testCases[testCase.id] = testCase;
+            if (response[this.groupIdPrefis].length) {
+                const groupData = response[this.groupIdPrefis][0];
+                let testCases = {};
+                for (let testCase of response[services.TestCasesService.testCaseIdPrefix] || []) {
+                    testCases[testCase.id] = testCase;
+                }
+                typeof callback === 'function' && callback({
+                    group: groupData,
+                    testCases: testCases,
+                    settings: (groupData && groupData.settings) || {}
+                });
+            } else {
+                typeof errorCallback === 'function' && errorCallback({
+                    status: 404
+                });
             }
-            callback({
-                group: groupData,
-                testCases: testCases,
-                settings: (groupData && groupData.settings) || {}
-            });
         }, errorCallback);
     };
 
@@ -43,6 +49,7 @@
 
     GroupsService.prototype.addTestCase = function (groupId, testCaseId, callback, errorCallback) {
         services.DatabaseService.getEntity(this.groupIdPrefis, groupId, (group) => {
+            group.testCases.splice($.inArray(testCaseId, group.testCases), 1);
             group.testCases.push(testCaseId);
             this.saveEntity(group, callback, errorCallback);
         });
@@ -51,6 +58,13 @@
     GroupsService.prototype.removeTestCase = function (groupId, testCaseId, callback, errorCallback) {
         services.DatabaseService.getEntity(this.groupIdPrefis, groupId, (group) => {
             group.testCases.splice($.inArray(testCaseId, group.testCases), 1);
+            this.saveEntity(group, callback, errorCallback);
+        });
+    };
+
+    GroupsService.prototype.setTestCases = function (groupId, testCases, callback, errorCallback) {
+        services.DatabaseService.getEntity(this.groupIdPrefis, groupId, (group) => {
+            group.testCases = testCases || [];
             this.saveEntity(group, callback, errorCallback);
         });
     };
