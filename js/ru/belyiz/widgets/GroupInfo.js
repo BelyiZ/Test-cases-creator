@@ -22,6 +22,7 @@
         this._msgServerFieldEmpty = 'Значение этого поля было удалено.';
         this._msgActualFieldValue = 'Актуальный текст:\n';
         this._msgRemovedFromServer = 'Редактируемая группа была удалена с сервера. Если сохранить изменения - это будет эквивалентно созданию новой.';
+        this._msgTestCasesTooltip = 'Изменение порядка тест-кейсов сохраняется сразу автоматически, нажимать кнопку "Сохранить изменения" не нужно.';
 
         this._eventHandlers = {};
         this._eventNames = {
@@ -47,6 +48,8 @@
         this.$container.html('');
         this.$container.append(this._getGroupInfoRowsHtml(settings.groupParams, groupInfo, serverGroupInfo));
         this.$container.append(this._getTestCasesBlockHtml(serverData || localData));
+
+        this.$container.find('[data-toggle="tooltip"]').tooltip();
     };
 
     GroupInfo.prototype.showDifference = function (serverData) {
@@ -128,7 +131,7 @@
     /**
      * Генерирует HTML блока со списком тест-кейсов, входящих в группу
      *
-     * @param groupDВфефданные группы и всех ее тест-кейсов
+     * @param groupData данные группы и всех ее тест-кейсов
      * @returns {string} сформированный HTML блока
      * @private
      */
@@ -136,42 +139,49 @@
         const groupInfo = (groupData && groupData.group) || {};
         const testCases = (groupData && groupData.testCases) || {};
 
+        if (!testCases || !groupInfo.testCases || groupInfo.testCases.length <= 0) {
+            return `<div class="alert alert-info mt-2">${this.msgNoOneTestSelected}</div>`;
+        }
+
         const $casesContainer = $('<div></div>');
 
-        if (testCases && groupInfo.testCases && groupInfo.testCases.length > 0) {
-            for (let testCaseId of groupInfo.testCases) {
-                const testCase = testCases[testCaseId];
-                if (testCase) {
-                    let html = '';
-                    for (let rowParam of testCase.settings.headerParams.rows) {
-                        html += `
-                            <div>
-                                <small><b>${rowParam.name}:</b></small>
-                                ${testCase.headerValues[rowParam.code]}
-                            </div>
-                        `;
-                    }
-
-                    $casesContainer.append(`
-                        <div class="list-group-item draggable js-test-case-item mt-2" data-test-case-id="${testCase.id}">
-                             <div class="align-top d-inline-block"><i class="fa fa-arrows-v big-icon mt-2 mr-3"></i></div>
-                             <div class="d-inline-block">${html}</div>
+        for (let testCaseId of groupInfo.testCases) {
+            const testCase = testCases[testCaseId];
+            if (testCase) {
+                let html = '';
+                for (let rowParam of testCase.settings.headerParams.rows) {
+                    html += `
+                        <div>
+                            <small><b>${rowParam.name}:</b></small>
+                            ${testCase.headerValues[rowParam.code]}
                         </div>
-                    `);
+                    `;
                 }
+
+                $casesContainer.append(`
+                    <div class="list-group-item draggable js-test-case-item mt-2" data-test-case-id="${testCase.id}">
+                         <div class="align-top d-inline-block"><i class="fa fa-arrows-v big-icon mt-2 mr-3"></i></div>
+                         <div class="d-inline-block">${html}</div>
+                    </div>
+                `);
             }
-            $casesContainer.sortable({
-                items: ">.draggable",
-                update: () => this.trigger(this._eventNames.testCasesReordered, {
-                    testCases: $.map(this.$container.find('.js-test-case-item'), (obj) => $(obj).data('testCaseId')),
-                    id: this.groupId,
-                    rev: this.groupRevision
-                })
-            });
-        } else {
-            $casesContainer.html(`<div class="alert alert-info mt-2">${this.msgNoOneTestSelected}</div>`);
         }
-        return $casesContainer;
+        $casesContainer.sortable({
+            items: ">.draggable",
+            update: () => this.trigger(this._eventNames.testCasesReordered, {
+                testCases: $.map(this.$container.find('.js-test-case-item'), (obj) => $(obj).data('testCaseId')),
+                id: this.groupId,
+                rev: this.groupRevision
+            })
+        });
+
+        return `
+            <h6>Тест-кейсы группы: 
+                <span class="fa fa-info-circle" role="tooltip" data-toggle="tooltip" data-placement="right" 
+                      title='${this._msgTestCasesTooltip}'></span> 
+            </h6>
+            ${$casesContainer.html()}
+        `;
     };
 
     GroupInfo.prototype._getCellValue = function ($container, code) {
