@@ -153,6 +153,7 @@
                     entity => this.entityInfoWidget.showDifference(entity),
                     err => {
                         if (err.status === 404) {
+                            this.pageSettings.activeEntityId = '';
                             this.entityInfoWidget.removedOnServer();
                             this.$removeItemBtn.hide();
                         } else {

@@ -17,8 +17,12 @@
         this.brForExcel = '<br style="mso-data-placement:same-cell;" />';
     }
 
-    TestCaseResultTable.prototype.reDraw = function (testCases) {
+    TestCaseResultTable.prototype.reDraw = function (testCases, group) {
         let html = '';
+
+        if (group) {
+            html += this._getGroupHtml(group);
+        }
 
         if (testCases) {
             for (let i = 0; i < testCases.length; i++) {
@@ -32,6 +36,23 @@
         }
 
         this.$container.html(html);
+    };
+
+    TestCaseResultTable.prototype._getGroupHtml = function (group) {
+        let html = '';
+        const rows = group.settings.headerParams.rows;
+        if (rows && rows.length) {
+            const colspan = rows[0].valueColspan + rows[0].colspan;
+            html += `<tr><td width="100%" colspan="${colspan}" style="text-align: center;"><b>ГРУППА:</b></td></tr>`;
+            for (let rowParam of rows) {
+                if (rowParam.inResult) {
+                    html += this._getHeaderRowHtml(rowParam, group.headerValues[rowParam.code]);
+                }
+            }
+            html += this._getTestCasesSeparatorHtml(colspan);
+            html += `<tr><td width="100%" colspan="${colspan}" style="text-align: center;"><b>ТЕСТ-КЕЙСЫ:</b></td></tr>`;
+        }
+        return html;
     };
 
     TestCaseResultTable.prototype._getTestCaseHtml = function (testCaseData) {

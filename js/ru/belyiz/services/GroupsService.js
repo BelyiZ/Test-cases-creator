@@ -14,13 +14,20 @@
         services.DatabaseService.getEntityWithRelations(this.groupIdPrefis, id, response => {
             if (response[this.groupIdPrefis].length) {
                 const groupData = response[this.groupIdPrefis][0];
-                let testCases = {};
-                for (let testCase of response[services.TestCasesService.testCaseIdPrefix] || []) {
-                    testCases[testCase.id] = testCase;
+                let testCasesById = {};
+                let sortedTestCases = [];
+                if (groupData && groupData.testCases) {
+                    for (let testCase of response[services.TestCasesService.testCaseIdPrefix] || []) {
+                        testCasesById[testCase.id] = testCase;
+                    }
+                    for (let id of groupData.testCases) {
+                        sortedTestCases.push(testCasesById[id]);
+                    }
                 }
                 typeof callback === 'function' && callback({
                     group: groupData,
-                    testCases: testCases,
+                    testCases: testCasesById,
+                    sortedTestCases: sortedTestCases,
                     settings: (groupData && groupData.settings) || {}
                 });
             } else {

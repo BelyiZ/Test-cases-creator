@@ -27,13 +27,19 @@
         this._eventHandlers = {};
         this._eventNames = {
             testCasesReordered: 'testCasesReordered',
+            changed: 'changed',
         };
     }
 
     GroupInfo.prototype._bindEvents = function () {
+        this.$container.on('keyup paste change', 'textarea, input', this._events.onFieldChanged.bind(this));
     };
 
-    GroupInfo.prototype._events = {};
+    GroupInfo.prototype._events = {
+        onFieldChanged: function () {
+            this.trigger(this._eventNames.changed);
+        }
+    };
 
     GroupInfo.prototype.reDraw = function (settings, localData, serverData) {
         const groupInfo = localData && localData.group;
@@ -50,6 +56,8 @@
         this.$container.append(this._getTestCasesBlockHtml(serverData || localData));
 
         this.$container.find('[data-toggle="tooltip"]').tooltip();
+
+        this.trigger(this._eventNames.changed);
     };
 
     GroupInfo.prototype.showDifference = function (serverData) {
@@ -168,20 +176,26 @@
         }
         $casesContainer.sortable({
             items: ">.draggable",
-            update: () => this.trigger(this._eventNames.testCasesReordered, {
-                testCases: $.map(this.$container.find('.js-test-case-item'), (obj) => $(obj).data('testCaseId')),
-                id: this.groupId,
-                rev: this.groupRevision
-            })
+            update: () => {
+                this.trigger(this._eventNames.testCasesReordered, {
+                    testCases: $.map(this.$container.find('.js-test-case-item'), (obj) => $(obj).data('testCaseId')),
+                    id: this.groupId,
+                    rev: this.groupRevision
+                });
+                this.trigger(this._eventNames.changed);
+            }
         });
 
-        return `
-            <h6>Тест-кейсы группы: 
-                <span class="fa fa-info-circle" role="tooltip" data-toggle="tooltip" data-placement="right" 
-                      title='${this._msgTestCasesTooltip}'></span> 
-            </h6>
-            ${$casesContainer.html()}
-        `;
+        const $casesBlockContainer = $(`
+            <div>       
+                 <h6>Тест-кейсы группы: 
+                    <span class="fa fa-info-circle" role="tooltip" data-toggle="tooltip" data-placement="right" 
+                          title='${this._msgTestCasesTooltip}'></span> 
+                 </h6>
+            </div>
+        `);
+        $casesBlockContainer.append($casesContainer);
+        return $casesBlockContainer;
     };
 
     GroupInfo.prototype._getCellValue = function ($container, code) {

@@ -25,17 +25,37 @@
         };
     }
 
+    Group.prototype._createWidgets = function () {
+        Pattern.clazz.prototype._createWidgets.call(this);
+
+        this.testCaseResultTableWidget = new widgets.TestCaseResultTable({container: this.$resultTable}).initialize();
+    };
+
     Group.prototype._bindEvents = function () {
         Pattern.clazz.prototype._bindEvents.call(this);
 
+        global.nodes.body.on('click', '[data-page-code="Group"] .js-download-file', this._events.onDownloadButtonClick.bind(this));
+
         this.entityInfoWidget.on('testCasesReordered', this._events.onTestCasesReordered, this);
+        this.entityInfoWidget.on('changed', this._events.onGroupDataChanged, this);
     };
 
     Group.prototype._events = $.extend({
         onTestCasesReordered: function (data) {
-            services.GroupsService.setTestCases(data.id, data.testCases, () => {
-                this.showEntityInfo(this.pageSettings.activeEntityId)
+            services.GroupsService.setTestCases(data.id, data.testCases, (group) => {
+                this.entityInfoWidget.groupRevision = group.rev;
             });
+        },
+
+        onGroupDataChanged: function () {
+            services.GroupsService.getEntity(this.pageSettings.activeEntityId, data => {
+                this.testCaseResultTableWidget.reDraw(data.sortedTestCases, this.entityInfoWidget.getData());
+            });
+        },
+
+        onDownloadButtonClick: function (e) {
+            const $target = $(e.currentTarget);
+            utils.TableToFileConverter.convert(this.$resultTable, this.pageSettings.downloadFileName, $target.data('fileType'));
         },
 
     }, Pattern.clazz.prototype._events);
