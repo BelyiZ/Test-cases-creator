@@ -24,17 +24,8 @@
         ];
 
         this.index = {
-            _id: '_design/myIndex',
-            views: {
-                groupsByTestCaseId: {
-                    map: 'function(doc) { ' +
-                    '   if (doc && doc.data && doc.data.testCases) {' +
-                    '      for (let id of doc.data.testCases) { ' +
-                    '         emit(id); ' +
-                    '      }' +
-                    '   }' +
-                    '}'
-                }
+            index: {
+                fields: ['data.testCases']
             }
         };
 
@@ -67,16 +58,9 @@
                     this.localDB = new PouchDB(doc.name, {revs_limit: 10});
                     this.localDB.setSchema(this.schema);
                     this.localDB
-                        .get(this.index._id)
-                        .then((doc) => {
-                            this.index._rev = doc._rev;
-                            this.localDB.put(this.index)
-                        })
-                        .catch(err => {
-                            if (err.name !== 'conflict') {
-                                this.processError(err);
-                            }
-                        });
+                        .createIndex(this.index)
+                        .then(console.log)
+                        .catch(this.processError);
 
                     const finishInitialization = function () {
                         this.initialized = true;
@@ -221,14 +205,14 @@
     };
 
     /**
-     * Выполнение запроса по построенному индексу
-     * @param indexName название индекса
+     * Выполнение поискового запроса
      * @param options параметры запроса
      * @param callback функция, которая выполнить в случае успешной инициализации настроек
      * @param errorCallback функция, которая выполнить в случае ошибки
      */
-    DatabaseService.prototype.indexQuery = function (indexName, options, callback, errorCallback) {
-        this.localDB.query(indexName, options)
+    DatabaseService.prototype.find = function (options, callback, errorCallback) {
+        this.localDB
+            .find(options)
             .then(callback)
             .catch((typeof errorCallback === 'function' && errorCallback) || this.processError.bind(this));
     };

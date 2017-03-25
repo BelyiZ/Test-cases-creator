@@ -31,12 +31,17 @@
     };
 
     TestCasesService.prototype.findGroups = function (testCaseId, callback, errorCallback) {
-        services.DatabaseService.indexQuery(
-            'myIndex/groupsByTestCaseId',
-            {key: testCaseId},
+        services.DatabaseService.find(
+            {
+                selector: {
+                    'data.testCases': {
+                        '$elemMatch': {'$eq': testCaseId}
+                    }
+                }
+            },
             result => {
-                let ids = $.map(result.rows, row => {
-                    return services.DatabaseService.parseId(row.id);
+                let ids = $.map(result.docs, doc => {
+                    return services.DatabaseService.parseId(doc._id);
                 });
                 (ids.length && services.GroupsService.some(ids, callback, errorCallback)) || callback([]);
             },
