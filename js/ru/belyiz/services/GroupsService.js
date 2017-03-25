@@ -49,7 +49,7 @@
 
     GroupsService.prototype.addTestCase = function (groupId, testCaseId, callback, errorCallback) {
         services.DatabaseService.getEntity(this.groupIdPrefis, groupId, (group) => {
-            group.testCases.splice($.inArray(testCaseId, group.testCases), 1);
+            group.testCases = utils.ArraysUtils.removeAllMatches(group.testCases, testCaseId);
             group.testCases.push(testCaseId);
             this.saveEntity(group, callback, errorCallback);
         });
@@ -57,7 +57,7 @@
 
     GroupsService.prototype.removeTestCase = function (groupId, testCaseId, callback, errorCallback) {
         services.DatabaseService.getEntity(this.groupIdPrefis, groupId, (group) => {
-            group.testCases.splice($.inArray(testCaseId, group.testCases), 1);
+            group.testCases = utils.ArraysUtils.removeAllMatches(group.testCases, testCaseId);
             this.saveEntity(group, callback, errorCallback);
         });
     };

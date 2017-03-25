@@ -46,10 +46,7 @@
                 if (isActive) {
                     this.selectedIds.push(id);
                 } else {
-                    const pos = this.selectedIds.indexOf(id);
-                    if (pos !== -1) {
-                        this.selectedIds.splice(pos, 1);
-                    }
+                    this.selectedIds = utils.ArraysUtils.removeAllMatches(this.selectedIds, id);
                 }
                 this.trigger(this._eventNames.multipleSelected, {ids: this.selectedIds});
 

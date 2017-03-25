@@ -53,7 +53,7 @@
             const $target = $(e.currentTarget);
             const groupId = $target.data('groupId');
             global.ru.belyiz.services.GroupsService.removeTestCase(groupId, this.testCaseId, () => {
-                this.usedGroups.splice($.inArray(groupId, this.usedGroups), 1);
+                this.usedGroups = utils.ArraysUtils.removeAllMatches(this.usedGroups, groupId);
                 $target.closest('.badge').remove();
             });
         },

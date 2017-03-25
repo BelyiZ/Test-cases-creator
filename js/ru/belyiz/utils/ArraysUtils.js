@@ -36,4 +36,26 @@
             $(array1).not(array2).length === 0 && $(array2).not(array1).length === 0;
     };
 
+    /**
+     * Удаляет из массива все вхождения заданного элемента
+     * @param array целевой массив
+     * @param item удаляемый элемент
+     * @returns {*} новый массив без целевых элементов
+     */
+    ArraysUtils.prototype.removeAllMatches = function (array, item) {
+        return $.grep(array, value => value !== item);
+    };
+
+    /**
+     * В переданном массиве удаляет первое вхождение заданного элемента
+     * @param array целевой массив
+     * @param item удаляемый элемент
+     */
+    ArraysUtils.prototype.removeFirstMatch = function (array, item) {
+        const index = $.inArray(item, array);
+        if (index >= 0) {
+            array.splice(index, 1);
+        }
+    };
+
 })(window, window.ru.belyiz.utils);
