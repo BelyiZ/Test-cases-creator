@@ -186,10 +186,16 @@
                 if (doc) {
                     typeof callback === 'function' && callback(doc);
                 } else {
-                    $.getJSON('defaultSettings.json', (json) => this.saveSettings(json, callback));
+                    $.getJSON('defaultSettings.json', (json) => this.saveSettings(json, callback, errorCallback));
                 }
             },
-            errorCallback
+            err => {
+                if (err.status === 404) {
+                    $.getJSON('defaultSettings.json', (json) => this.saveSettings(json, callback, errorCallback));
+                } else {
+                    (typeof errorCallback === 'function' && errorCallback(err)) || this.processError(err);
+                }
+            }
         );
     };
 
