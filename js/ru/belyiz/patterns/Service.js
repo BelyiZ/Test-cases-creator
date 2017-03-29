@@ -10,7 +10,7 @@
             newService.prototype = Object.create(Service.prototype);
         },
 
-        parent: Service.prototype
+        proto: Service.prototype
     });
 
     /**

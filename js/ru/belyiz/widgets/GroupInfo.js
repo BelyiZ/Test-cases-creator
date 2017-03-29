@@ -68,7 +68,7 @@
     };
 
     GroupInfo.prototype.removedOnServer = function () {
-        utils.ShowNotification.static(this._msgRemovedFromServer, 'danger');
+        services.Notification.static(this._msgRemovedFromServer, 'danger');
         this.groupId = '';
         this.groupRevision = '';
     };

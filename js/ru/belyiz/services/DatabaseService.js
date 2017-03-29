@@ -1,5 +1,5 @@
 /** @namespace window.ru.belyiz.services.DatabaseService */
-(function (global, Pattern, widgets, utils) {
+(function (global, Pattern, widgets, services, utils) {
     'use strict';
     Pattern.extend(DatabaseService);
 
@@ -36,6 +36,7 @@
         this._msgOptimisticLock = 'Кто-то успел измененить исходные данные, пока ты редактировал(а). Нужно обновиться и только потом сохранить свои изменения.';
         this._msgUnparsedError = 'Произошла ошибка во время работы с базой данных. Подробности: <br> ';
         this._msgNonDatabaseError = 'Произошла кое-какая ошибка. Подробности: <br> ';
+        this._msgCloseWithoutSelectMsg = 'Нельзя просто так взять и закрыть окно, ничего не выбрав!';
 
         this._eventHandlers = {};
         this._eventNames = {
@@ -127,7 +128,7 @@
                     })
                     .catch(this.processError.bind(this));
             } else {
-                utils.ShowNotification.error('Нельзя просто так взять и закрыть окно, ничего не выбрав!')
+                services.Notification.error(this._msgCloseWithoutSelectMsg)
             }
         });
 
@@ -165,11 +166,11 @@
      */
     DatabaseService.prototype.processError = function (err) {
         if (!err.status) {
-            utils.ShowNotification.error(this._msgNonDatabaseError + err);
+            services.Notification.error(this._msgNonDatabaseError + err);
         } else if (err.status === 409) {
-            utils.ShowNotification.error(this._msgOptimisticLock);
+            services.Notification.error(this._msgOptimisticLock);
         } else {
-            utils.ShowNotification.error(this._msgUnparsedError + JSON.stringify(err));
+            services.Notification.error(this._msgUnparsedError + JSON.stringify(err));
         }
         console.debug(err);
     };
@@ -327,13 +328,20 @@
         return this.localDB.rel.parseDocID(id).id;
     };
 
-
     /**
      * Получение типа сущности по комплексному идентификатору (от relational-pouch)
      * @param id комплексный идентификатор сущности
      */
     DatabaseService.prototype.parseType = function (id) {
         return this.localDB.rel.parseDocID(id).type;
+    };
+
+    /**
+     * Получение типа сущности по комплексному идентификатору (от relational-pouch)
+     * @param id комплексный идентификатор сущности
+     */
+    DatabaseService.prototype.buildRelId = function (type, id) {
+        return this.localDB.rel.makeDocID({type: type, id: id});
     };
 
     /**
@@ -357,4 +365,4 @@
     };
 
     utils.Package.declare('ru.belyiz.services.DatabaseService', new DatabaseService().initialize());
-})(window, window.ru.belyiz.patterns.Service, window.ru.belyiz.widgets, window.ru.belyiz.utils);
+})(window, window.ru.belyiz.patterns.Service, window.ru.belyiz.widgets, window.ru.belyiz.services, window.ru.belyiz.utils);

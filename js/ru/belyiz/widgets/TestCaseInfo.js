@@ -93,7 +93,7 @@
 
     TestCaseInfo.prototype.showDifference = function (serverTestCaseInfo) {
         if (serverTestCaseInfo.rev && serverTestCaseInfo.rev !== this.testCaseRevision) {
-            utils.ShowNotification.static(`
+            services.Notification.static(`
                 ${this._msgChangedOnServer}
                 <div class="added-row text-left p-1">${this._msgAddedRowHint}</div>
                 <div class="removed-row text-left p-1">${this._msgRemovedRowHint}</div>
@@ -104,7 +104,7 @@
     };
 
     TestCaseInfo.prototype.removedOnServer = function () {
-        utils.ShowNotification.static(this._msgRemovedFromServer, 'danger');
+        services.Notification.static(this._msgRemovedFromServer, 'danger');
         let testCaseData = this.getData();
         testCaseData.id = '';
         testCaseData.rev = '';

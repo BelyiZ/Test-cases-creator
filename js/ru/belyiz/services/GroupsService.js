@@ -43,7 +43,10 @@
     };
 
     GroupsService.prototype.removeEntity = function (data, callback, errorCallback) {
-        services.DatabaseService.removeEntity(this.type, data, callback, errorCallback);
+        services.DatabaseService.removeEntity(this.type, data, () => {
+            services.UndoService.show('Группа удалена.', services.DatabaseService.buildRelId(this.type, data.id), data.rev);
+            typeof (callback) === 'function' && callback();
+        }, errorCallback);
     };
 
     GroupsService.prototype.all = function (ids, callback, errorCallback) {

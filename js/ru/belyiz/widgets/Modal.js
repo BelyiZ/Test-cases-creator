@@ -11,6 +11,7 @@
     function Modal(setup) {
         setup = setup || {};
 
+        this.id = setup.id || '';
         this.title = setup.title || '';
         this.contentHtml = setup.contentHtml || '';
         this.applyBtnText = setup.applyBtnText || 'Применить';
@@ -30,7 +31,10 @@
 
     Modal.prototype._cacheElements = function () {
         this.$modal = $(this._buildModalHtml());
-
+        this.$title = this.$modal.find('.js-modal-title');
+        this.$content = this.$modal.find('.js-modal-content');
+        this.$applyBtn = this.$modal.find('.js-apply-btn');
+        this.$cancelBtn = this.$modal.find('.js-cancel-btn');
     };
 
     Modal.prototype._bindEvents = function () {
@@ -67,22 +71,41 @@
     };
 
     Modal.prototype.setContentHtml = function (contentHtml) {
-        this.contentHtml = contentHtml;
-        this.$modal.find('.modal-body').html(contentHtml);
+        this.$content.html(contentHtml);
+    };
+
+    Modal.prototype.setContentText = function (text) {
+        this.$content.html($('<p></p>').text(text));
+        return this;
+    };
+
+    Modal.prototype.setTitle = function (text) {
+        this.$title.text(text);
+        return this;
+    };
+
+    Modal.prototype.setApplyBtnText = function (text) {
+        this._setBtnText(this.$applyBtn, text);
+        return this;
+    };
+
+    Modal.prototype.setCancelBtnText = function (text) {
+        this._setBtnText(this.$cancelBtn, text);
+        return this;
     };
 
     Modal.prototype._buildModalHtml = function () {
         return `
-            <div class="modal fade" ${this.closable ? '' : 'data-backdrop="static"'}>
+            <div ${this.id ? 'id="' + this.id + '"' : ''} class="modal fade" ${this.closable ? '' : 'data-backdrop="static"'}>
                 <div class="modal-dialog" role="document">
                     <div class="modal-content">
                         <div class="modal-header">
-                            <h5 class="modal-title">${this.title}</h5>
+                            <h5 class="modal-title js-modal-title">${this.title}</h5>
                             <button type="button" class="close" ${this.closable ? '' : 'hidden'} data-dismiss="modal" aria-label="Close">
                                 <span aria-hidden="true">&times;</span>
                             </button>
                         </div>
-                        <div class="modal-body">${this.contentHtml}</div>
+                        <div class="modal-body js-modal-content">${this.contentHtml}</div>
                         <div class="modal-footer">
                             <button type="button" ${this.hideApplyBtn ? 'hidden' : ''}
                                     class="btn btn-primary js-apply-btn">${this.applyBtnText}</button>
@@ -96,5 +119,8 @@
         `;
     };
 
+    Modal.prototype._setBtnText = function ($btn, text) {
+        (text && $btn.text(text).show()) || $btn.hide();
+    };
 
 })(window, window.ru.belyiz.patterns.Widget, window.ru.belyiz.utils, window.ru.belyiz.widgets);

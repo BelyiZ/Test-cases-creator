@@ -9,6 +9,8 @@
     function Main() {
         this.initPages = {};
         this.defaultPage = 'TestCase';
+
+        this.msgSettingsSaved = 'Настройки сохранены';
     }
 
     Main.prototype.initialize = function () {
@@ -58,7 +60,7 @@
         },
 
         onSettingsSaved: function (newSettings) {
-            services.DatabaseService.saveSettings(newSettings, (entity) => utils.ShowNotification.success("Настройки сохранены"));
+            services.DatabaseService.saveSettings(newSettings, (entity) => services.Notification.success(this.msgSettingsSaved));
         },
 
         onDatabaseChanged: function (data) {

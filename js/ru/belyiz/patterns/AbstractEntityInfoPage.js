@@ -5,8 +5,8 @@
     AbstractEntityInfoPage.prototype = Object.create(Pattern.proto);
 
     utils.Package.declare('ru.belyiz.patterns.AbstractEntityInfoPage', {
-        extend: function (newWidget) {
-            newWidget.prototype = Object.create(AbstractEntityInfoPage.prototype);
+        extend: function (newPage) {
+            newPage.prototype = Object.create(AbstractEntityInfoPage.prototype);
         },
 
         clazz: AbstractEntityInfoPage,
@@ -49,6 +49,10 @@
     };
 
     AbstractEntityInfoPage.prototype._createWidgets = function () {
+        if (!(this.pageSettings.entityService instanceof global.ru.belyiz.patterns.AbstractEntityService.clazz)) {
+            throw ('Параметр entityService должен быть типа AbstractEntityService');
+        }
+
         this.entityInfoWidget = new this.pageSettings.entityInfoWidget({
             container: this.$content,
             entityService: this.pageSettings.entityService
@@ -69,7 +73,6 @@
         global.nodes.body.on('click', `[data-page-code="${this.pageSettings.pageCode}"] .js-create-button`, this._events.onCreateButtonClick.bind(this));
         global.nodes.body.on('click', `[data-page-code="${this.pageSettings.pageCode}"] .js-save-button`, this._events.onSaveButtonClick.bind(this));
         global.nodes.body.on('click', `[data-page-code="${this.pageSettings.pageCode}"] .js-remove-button`, this._events.onRemoveButtonClick.bind(this));
-
         this._bindWidgetsEvents();
     };
 
@@ -79,12 +82,14 @@
         this.entitiesListWidget.on('selected', this._events.onItemSelected, this);
         services.DatabaseService.on('dbChanged', this._events.onDatabaseChanged, this);
         services.DatabaseService.on('dbSynchronized', this._events.onDatabaseSynchronized, this);
+        services.UndoService.on('undo', this._events.onActionUndo, this);
     };
 
     AbstractEntityInfoPage.prototype._unbindWidgetsEvents = function () {
         this.entitiesListWidget.off('selected', this._events.onItemSelected);
         services.DatabaseService.off('dbChanged', this._events.onDatabaseChanged);
         services.DatabaseService.off('dbSynchronized', this._events.onDatabaseSynchronized);
+        services.UndoService.off('undo', this._events.onActionUndo, this);
     };
 
     AbstractEntityInfoPage.prototype._ready = function () {
@@ -119,9 +124,8 @@
         },
 
         onRemoveButtonClick: function () {
-            const entityData = this.entityInfoWidget.getData();
             this.pageSettings.entityService.removeEntity(
-                entityData,
+                this.entityInfoWidget.getData(),
                 () => {
                     this.showEntityInfo();
                     this.showEntitiesList();
@@ -168,6 +172,17 @@
             global.nodes.body.trigger('closeVerticalMenu');
             this.showEntityInfo(data.id);
         },
+
+        /**
+         * Когда пользователь отменил свое действие
+         * @param data объект с идентификатором и типом сущности
+         */
+        onActionUndo: function (data) {
+            if (data.type === this.pageSettings.entityService.type) {
+                this.showEntityInfo(data.id);
+                this.showEntitiesList(data.id);
+            }
+        }
     };
 
     AbstractEntityInfoPage.prototype.showEntityInfo = function (id) {
