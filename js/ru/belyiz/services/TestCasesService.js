@@ -19,7 +19,11 @@
     };
 
     TestCasesService.prototype.removeEntity = function (data, callback, errorCallback) {
-        services.DatabaseService.removeEntity(this.type, data, callback, errorCallback);
+        services.DatabaseService.removeEntity(this.type, data, () => {
+            const msg = (data.headerValues && data.headerValues.name) ? `Тест-кейс «${data.headerValues.name}» удален.` : 'Тест-кейс удален.';
+            services.UndoService.show(msg, services.DatabaseService.buildRelId(this.type, data.id), data.rev);
+            typeof (callback) === 'function' && callback();
+        }, errorCallback);
     };
 
     TestCasesService.prototype.all = function (ids, callback, errorCallback) {

@@ -44,7 +44,8 @@
 
     GroupsService.prototype.removeEntity = function (data, callback, errorCallback) {
         services.DatabaseService.removeEntity(this.type, data, () => {
-            services.UndoService.show('Группа удалена.', services.DatabaseService.buildRelId(this.type, data.id), data.rev);
+            const msg = (data.headerValues && data.headerValues.name) ? `Группа «${data.headerValues.name}» удалена.` : 'Группа удалена.';
+            services.UndoService.show(msg, services.DatabaseService.buildRelId(this.type, data.id), data.rev);
             typeof (callback) === 'function' && callback();
         }, errorCallback);
     };

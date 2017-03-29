@@ -62,7 +62,13 @@
     };
 
     UndoService.prototype.show = function (text, id, rev) {
-        const undoLink = `&ensp;<nobr><a href="javascript:;" class="js-undo-alert" data-id="${id}" data-rev="${rev}">${this._undoLinkMsg}</a></nobr>`;
+        const undoLink = `
+            <br/>
+            <a href="javascript:;" class="js-undo-alert" data-id="${id}" data-rev="${rev}">
+                <i class="fa fa-undo"></i>
+                ${this._undoLinkMsg}
+            </a>
+        `;
         services.Notification.show(text + undoLink, 'success', 10000);
     };
 
