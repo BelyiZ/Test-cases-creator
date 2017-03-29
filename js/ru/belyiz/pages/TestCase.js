@@ -35,8 +35,18 @@
 
         global.nodes.body.on('keyup', '[data-page-code="TestCase"] textarea', this._events.onTextAreaKeyup.bind(this));
         global.nodes.body.on('click', '[data-page-code="TestCase"] .js-download-file', this._events.onDownloadButtonClick.bind(this));
+    };
+
+    TestCase.prototype._bindWidgetsEvents = function () {
+        Pattern.clazz.prototype._bindWidgetsEvents.call(this);
 
         this.entityInfoWidget.on('changed', this._events.onTestCaseDataChanged, this);
+    };
+
+    TestCase.prototype._unbindWidgetsEvents = function () {
+        Pattern.clazz.prototype._unbindWidgetsEvents.call(this);
+
+        this.entityInfoWidget.off('changed', this._events.onTestCaseDataChanged, this);
     };
 
     TestCase.prototype._events = $.extend({

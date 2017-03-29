@@ -35,9 +35,20 @@
         Pattern.clazz.prototype._bindEvents.call(this);
 
         global.nodes.body.on('click', '[data-page-code="Group"] .js-download-file', this._events.onDownloadButtonClick.bind(this));
+    };
+
+    Group.prototype._bindWidgetsEvents = function () {
+        Pattern.clazz.prototype._bindWidgetsEvents.call(this);
 
         this.entityInfoWidget.on('testCasesReordered', this._events.onTestCasesReordered, this);
         this.entityInfoWidget.on('changed', this._events.onGroupDataChanged, this);
+    };
+
+    Group.prototype._unbindWidgetsEvents = function () {
+        Pattern.clazz.prototype._unbindWidgetsEvents.call(this);
+
+        this.entityInfoWidget.off('testCasesReordered', this._events.onTestCasesReordered, this);
+        this.entityInfoWidget.off('changed', this._events.onGroupDataChanged, this);
     };
 
     Group.prototype._events = $.extend({
@@ -48,9 +59,13 @@
         },
 
         onGroupDataChanged: function () {
-            services.GroupsService.getEntity(this.pageSettings.activeEntityId, data => {
-                this.testCaseResultTableWidget.reDraw(data.sortedTestCases, this.entityInfoWidget.getData());
-            });
+            if (this.pageSettings.activeEntityId) {
+                services.GroupsService.getEntity(this.pageSettings.activeEntityId, data => {
+                    this.testCaseResultTableWidget.reDraw(data.sortedTestCases, this.entityInfoWidget.getData());
+                });
+            } else {
+                this.testCaseResultTableWidget.reDraw([], this.entityInfoWidget.getData());
+            }
         },
 
         onDownloadButtonClick: function (e) {

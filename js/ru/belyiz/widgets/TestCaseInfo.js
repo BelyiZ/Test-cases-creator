@@ -200,10 +200,6 @@
         }
 
         return `
-            <div class="text-center">
-                <b>ШАПКА ТАБЛИЦЫ</b>
-            </div>
-            <br>
             <div id="testHeaderRows">${rowsHtml}</div>
         `;
     };
