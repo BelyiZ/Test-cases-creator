@@ -20,6 +20,8 @@
 
     UndoService.prototype._init = function () {
         global.nodes.body.on('click', '.js-undo-alert', this._events.onUndoClick.bind(this));
+
+        services.DatabaseService.on('dbChanged', this._events.onDatabaseChanged, this);
     };
 
     UndoService.prototype._events = {
@@ -58,9 +60,19 @@
                         services.Notification.warning(this._undoFailedMsg);
                     }
                 });
-        }
+        },
+
+        onDatabaseChanged: function () {
+            $('.js-undo-alert').closest('.alert').remove();
+        },
     };
 
+    /**
+     * Показывает сообщение с возможностью отмены действия
+     * @param text текст сообщения
+     * @param id идентификатор сущности
+     * @param rev номер ревизии сущности, до которой следует откатить изменения
+     */
     UndoService.prototype.show = function (text, id, rev) {
         const undoLink = `
             <br/>
