@@ -200,7 +200,7 @@
         }
 
         return `
-            <div id="testHeaderRows">${rowsHtml}</div>
+            <div id="testHeaderRows" class="mt-4">${rowsHtml}</div>
         `;
     };
 
