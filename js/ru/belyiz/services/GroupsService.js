@@ -21,7 +21,9 @@
                         testCasesById[testCase.id] = testCase;
                     }
                     for (let id of groupData.testCases) {
-                        sortedTestCases.push(testCasesById[id]);
+                        if (testCasesById[id]) {
+                            sortedTestCases.push(testCasesById[id]);
+                        }
                     }
                 }
                 typeof callback === 'function' && callback({
