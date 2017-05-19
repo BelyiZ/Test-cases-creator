@@ -19,6 +19,18 @@
     function Page() {
     }
 
+    Page.prototype._bindWidgetsEvents = function () {
+    };
+
+    Page.prototype._unbindWidgetsEvents = function () {
+    };
+
+    Page.prototype.enable = function () {
+    };
+
+    Page.prototype.disable = function () {
+    };
+
     /**
      * Initialize instance of "class"
      * @returns {Page} this instance
