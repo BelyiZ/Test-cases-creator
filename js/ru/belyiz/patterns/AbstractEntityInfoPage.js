@@ -89,7 +89,7 @@
         this.entitiesListWidget.off('selected', this._events.onItemSelected);
         services.DatabaseService.off('dbChanged', this._events.onDatabaseChanged);
         services.DatabaseService.off('dbSynchronized', this._events.onDatabaseSynchronized);
-        services.UndoService.off('undo', this._events.onActionUndo, this);
+        services.UndoService.off('undo', this._events.onActionUndo);
     };
 
     AbstractEntityInfoPage.prototype._ready = function () {
