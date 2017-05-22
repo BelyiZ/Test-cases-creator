@@ -37,7 +37,6 @@
     }
 
     TestCaseExecute.prototype._createWidgets = function () {
-        this.testCaseGroupsWidget = new widgets.TestCaseGroups({containerId: 'testCaseGroupsContainer'}).initialize();
     };
 
     TestCaseExecute.prototype._bindEvents = function () {
