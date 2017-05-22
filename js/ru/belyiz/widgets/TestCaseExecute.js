@@ -87,7 +87,7 @@
         if (testCaseInfo && testCaseInfo.id > -1) {
             this.testCaseInfo = testCaseInfo;
 
-            this.$container.append(this._getHeaderRowsHtml(testCaseInfo.settings.headerParams, testCaseInfo));
+            this.$container.append(this._getHeaderRowsHtml(testCaseInfo.settings.tests.header, testCaseInfo));
 
             const steps = this._getAllSteps(testCaseInfo);
 
@@ -137,7 +137,7 @@
     TestCaseExecute.prototype._getAllSteps = function (testCaseInfo) {
         let steps = [];
 
-        const blocks = testCaseInfo.settings.blocks;
+        const blocks = testCaseInfo.settings.tests.blocks;
         for (let i = 0; i < blocks.length; i++) {
             const blockValues = testCaseInfo.blocksValues[blocks[i].code];
             for (let j = 0; j < blockValues.length; j++) {

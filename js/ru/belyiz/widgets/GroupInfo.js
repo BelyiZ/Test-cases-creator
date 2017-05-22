@@ -52,7 +52,7 @@
         this.groupRevision = serverRevision || localRevision;
 
         this.$container.html('');
-        this.$container.append(this._getGroupInfoRowsHtml(settings.groupParams, groupInfo, serverGroupInfo));
+        this.$container.append(this._getGroupInfoRowsHtml(settings.groups, groupInfo, serverGroupInfo));
         this.$container.append(this._getTestCasesBlockHtml(serverData || localData));
 
         this.$container.find('[data-toggle="tooltip"]').tooltip();
@@ -82,7 +82,7 @@
             testCases: []
         };
 
-        for (let rowParam of this.settings.groupParams.rows) {
+        for (let rowParam of this.settings.groups.header.rows) {
             groupData.headerValues[rowParam.code] = this._getCellValue(this.$container.find('#groupHeaderRows'), rowParam.code);
         }
         for (let item of this.$container.find('.js-test-case-item')) {
@@ -109,7 +109,7 @@
         const merge = groupInfo.rev && serverGroupInfo.rev && groupInfo.rev !== this.groupRevision;
 
         let rowsHtml = '';
-        for (let rowParam of groupParams.rows) {
+        for (let rowParam of groupParams.header.rows) {
             if (rowParam.inInputs) {
                 const localValue = groupInfo.headerValues && groupInfo.headerValues[rowParam.code] || '';
                 const serverValue = serverGroupInfo.headerValues && serverGroupInfo.headerValues[rowParam.code] || '';
@@ -157,7 +157,7 @@
             const testCase = testCases[testCaseId];
             if (testCase) {
                 let html = '';
-                for (let rowParam of testCase.settings.headerParams.rows) {
+                for (let rowParam of testCase.settings.tests.header.rows) {
                     html += `
                         <div>
                             <small><b>${rowParam.name}:</b></small>

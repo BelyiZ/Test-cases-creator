@@ -69,7 +69,7 @@
         let testCases = [];
         for (let doc of docs) {
             let testCase = {id: doc.id, rev: doc.rev};
-            for (let rowParams of doc.settings.headerParams.rows) {
+            for (let rowParams of doc.settings.tests.header.rows) {
                 testCase[rowParams.name] = doc.headerValues[rowParams.code];
             }
 
