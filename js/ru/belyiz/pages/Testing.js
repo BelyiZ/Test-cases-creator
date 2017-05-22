@@ -38,14 +38,12 @@
         this.entitiesListWidget.on('selected', this._events.onItemSelected, this);
         services.DatabaseService.on('dbChanged', this._events.onDatabaseChanged, this);
         services.DatabaseService.on('dbSynchronized', this._events.onDatabaseSynchronized, this);
-        services.UndoService.on('undo', this._events.onActionUndo, this);
     };
 
     Testing.prototype._unbindWidgetsEvents = function () {
         this.entitiesListWidget.off('selected', this._events.onItemSelected);
         services.DatabaseService.off('dbChanged', this._events.onDatabaseChanged);
         services.DatabaseService.off('dbSynchronized', this._events.onDatabaseSynchronized);
-        services.UndoService.off('undo', this._events.onActionUndo);
         this.entityInfoWidget.off('changed', this._events.onTestCaseDataChanged, this);
     };
 
@@ -112,6 +110,7 @@
 
         if (services.DatabaseService.isInitialized()) {
             this.showEntitiesList();
+            this.showEntityInfo();
         }
     };
 

@@ -85,7 +85,7 @@
     TestCaseExecute.prototype.reDraw = function (testCaseInfo) {
         this.$container.html('');
 
-        if (testCaseInfo && testCaseInfo.id) {
+        if (testCaseInfo && testCaseInfo.id > -1) {
             this.testCaseInfo = testCaseInfo;
 
             this.$container.append(this._getHeaderRowsHtml(testCaseInfo.settings.headerParams, testCaseInfo));
