@@ -40,7 +40,7 @@
 
     TestingResultTable.prototype._getGroupHtml = function (group) {
         let html = '';
-        const rows = group.settings.headerParams.rows;
+        const rows = group.settings.tests.header.rows;
         if (rows && rows.length) {
             const colspan = rows[0].valueColspan + rows[0].colspan;
             html += `<tr><td width="100%" colspan="${colspan}" style="text-align: center;"><b>ГРУППА:</b></td></tr>`;
@@ -63,13 +63,13 @@
         }
 
         let html = '';
-        for (let rowParam of testCaseData.settings.headerParams.rows) {
+        for (let rowParam of testCaseData.settings.tests.header.rows) {
             if (rowParam.inResult) {
                 html += this._getHeaderRowHtml(rowParam, testCaseData.headerValues[rowParam.code]);
             }
         }
 
-        for (let blockParams of testCaseData.settings.blocks) {
+        for (let blockParams of testCaseData.settings.tests.blocks) {
             html += this._getBlockTitlesHTML(blockParams);
 
             let rowNum = 1;

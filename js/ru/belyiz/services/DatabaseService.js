@@ -337,7 +337,8 @@
     };
 
     /**
-     * Получение типа сущности по комплексному идентификатору (от relational-pouch)
+     * Получение комплексного идентификатора сущности по типу (от relational-pouch)
+     * @param type тип сущности
      * @param id комплексный идентификатор сущности
      */
     DatabaseService.prototype.buildRelId = function (type, id) {

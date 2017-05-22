@@ -1,149 +1,130 @@
 {
+    "version": 1,
     "markdown": false,
-    "groupParams": {
-        "colspan": 2,
-        "valueColspan": 5,
-        "width": "1%",
-        "rows": [
-            {
-                "code": "name",
-                "name": "Название",
-                "inInputs": true,
-                "inResult": true
-            },
-            {
-                "code": "description",
-                "name": "Описание",
-                "inInputs": true,
-                "inResult": true
-            }
-        ]
-    },
-    "headerParams": {
-        "rows": [
-            {
-                "code": "name",
-                "colspan": 2,
-                "valueColspan": 5,
-                "width": "1%",
-                "name": "Название",
-                "inInputs": true,
-                "inResult": true
-            },
-            {
-                "code": "code",
-                "colspan": 2,
-                "valueColspan": 5,
-                "width": "1%",
-                "name": "Код",
-                "inInputs": true,
-                "inResult": true
-            },
-            {
-                "code": "description",
-                "colspan": 2,
-                "valueColspan": 5,
-                "width": "1%",
-                "name": "Описание",
-                "inInputs": true,
-                "inResult": true
-            }
-        ]
-    },
-    "blocks": [
-        {
-            "code": "preconditions",
-            "title": {
-                "text": "Предусловия",
-                "colspan": 7
-            },
-            "cells": [
-                {
-                    "code": "number",
-                    "colspan": 1,
-                    "width": "1%",
-                    "name": "№",
-                    "isOrderNumber": true,
-                    "inInputs": false,
-                    "inResult": true
-                },
+    "groups": {
+        "header": {
+            "colspan": 2,
+            "valueColspan": 5,
+            "width": "1%",
+            "rows": [
                 {
                     "code": "name",
-                    "colspan": 6,
-                    "width": "90%",
-                    "name": "Описание",
-                    "inInputs": true,
-                    "inResult": true
-                }
-            ]
-        },
-        {
-            "code": "steps",
-            "title": {
-                "text": "Шаги теста",
-                "colspan": 7
-            },
-            "cells": [
-                {
-                    "code": "number",
-                    "colspan": 1,
-                    "width": "1%",
-                    "name": "№",
-                    "isOrderNumber": true,
-                    "inInputs": false,
-                    "inResult": true
-                },
-                {
-                    "code": "name",
-                    "colspan": 2,
-                    "width": "30%",
-                    "name": "Действие",
+                    "name": "Название",
                     "inInputs": true,
                     "inResult": true
                 },
                 {
-                    "code": "expected",
-                    "colspan": 2,
-                    "width": "30%",
-                    "name": "Ожидаемый результат",
-                    "inInputs": true,
-                    "inResult": true
-                },
-                {
-                    "code": "result",
-                    "colspan": 2,
-                    "width": "30%",
-                    "name": "Фактический результат",
-                    "inInputs": false,
-                    "inResult": true
-                }
-            ]
-        },
-        {
-            "code": "postconditions",
-            "title": {
-                "text": "Постусловия",
-                "colspan": 7
-            },
-            "cells": [
-                {
-                    "code": "number",
-                    "colspan": 1,
-                    "width": "1%",
-                    "name": "№",
-                    "isOrderNumber": true,
-                    "inInputs": false,
-                    "inResult": true
-                },
-                {
-                    "code": "name",
-                    "colspan": 6,
-                    "width": "90%",
+                    "code": "description",
                     "name": "Описание",
                     "inInputs": true,
                     "inResult": true
                 }
             ]
         }
-    ]
+    },
+    "tests": {
+        "header": {
+            "rows": [
+                {
+                    "code": "name",
+                    "colspan": 2,
+                    "valueColspan": 5,
+                    "width": "1%",
+                    "name": "Название",
+                    "inInputs": true,
+                    "inResult": true
+                },
+                {
+                    "code": "code",
+                    "colspan": 2,
+                    "valueColspan": 5,
+                    "width": "1%",
+                    "name": "Код",
+                    "inInputs": true,
+                    "inResult": true
+                },
+                {
+                    "code": "description",
+                    "colspan": 2,
+                    "valueColspan": 5,
+                    "width": "1%",
+                    "name": "Описание",
+                    "inInputs": true,
+                    "inResult": true
+                }
+            ]
+        },
+        "blocks": [
+            {
+                "code": "preconditions",
+                "executable": false,
+                "title": {
+                    "text": "Предусловия",
+                    "colspan": 7
+                },
+                "cells": [
+                    {
+                        "code": "number",
+                        "colspan": 1,
+                        "width": "1%",
+                        "name": "№",
+                        "isOrderNumber": true,
+                        "inInputs": false,
+                        "inResult": true
+                    },
+                    {
+                        "code": "name",
+                        "colspan": 6,
+                        "width": "90%",
+                        "name": "Описание",
+                        "inInputs": true,
+                        "inResult": true
+                    }
+                ]
+            },
+            {
+                "code": "steps",
+                "executable": true,
+                "title": {
+                    "text": "Шаги теста",
+                    "colspan": 7
+                },
+                "cells": [
+                    {
+                        "code": "number",
+                        "colspan": 1,
+                        "width": "1%",
+                        "name": "№",
+                        "isOrderNumber": true,
+                        "inInputs": false,
+                        "inResult": true
+                    },
+                    {
+                        "code": "name",
+                        "colspan": 2,
+                        "width": "30%",
+                        "name": "Действие",
+                        "inInputs": true,
+                        "inResult": true
+                    },
+                    {
+                        "code": "expected",
+                        "colspan": 2,
+                        "width": "30%",
+                        "name": "Ожидаемый результат",
+                        "inInputs": true,
+                        "inResult": true
+                    },
+                    {
+                        "code": "result",
+                        "colspan": 2,
+                        "width": "30%",
+                        "name": "Фактический результат",
+                        "inInputs": false,
+                        "inResult": true
+                    }
+                ]
+            }
+        ]
+    }
 }

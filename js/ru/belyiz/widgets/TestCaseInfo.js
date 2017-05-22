@@ -45,7 +45,7 @@
     TestCaseInfo.prototype._events = {
         onAddRowClick: function (e) {
             const blockCode = $(e.currentTarget).data('blockCode');
-            for (let blockParams of this.settings.blocks) {
+            for (let blockParams of this.settings.tests.blocks) {
                 if (blockParams.code === blockCode) {
                     this.$container.find(`#${blockCode}`).append(this._getBlockRowHtml(blockParams));
                 }
@@ -76,8 +76,8 @@
         if (this.testCaseId) {
             this._initGroupsBlock();
         }
-        this.$container.append(this._getHeaderRowsHtml(settings.headerParams, testCaseInfo, serverTestCaseInfo));
-        for (let blockSettings of settings.blocks) {
+        this.$container.append(this._getHeaderRowsHtml(settings.tests.header, testCaseInfo, serverTestCaseInfo));
+        for (let blockSettings of settings.tests.blocks) {
             const localBlockValues = testCaseInfo && testCaseInfo.blocksValues && testCaseInfo.blocksValues[blockSettings.code] || false;
             const serverBlockValues = serverTestCaseInfo && serverTestCaseInfo.blocksValues && serverTestCaseInfo.blocksValues[blockSettings.code] || false;
             this.$container.append(this._getBlocksHtml(blockSettings, localBlockValues, serverBlockValues));
@@ -120,11 +120,11 @@
             blocksValues: {}
         };
 
-        for (let rowParam of this.settings.headerParams.rows) {
+        for (let rowParam of this.settings.tests.header.rows) {
             testCaseData.headerValues[rowParam.code] = this._getCellValue(this.$container.find('#testHeaderRows'), rowParam.code);
         }
 
-        for (let blockSettings of this.settings.blocks) {
+        for (let blockSettings of this.settings.tests.blocks) {
             const $itemsTable = this.$container.find(`#${blockSettings.code}`);
             testCaseData.blocksValues[blockSettings.code] = [];
 

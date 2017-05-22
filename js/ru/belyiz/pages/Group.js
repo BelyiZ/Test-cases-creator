@@ -79,7 +79,7 @@
         let groups = [];
         for (let doc of docs) {
             let group = {id: doc.id, rev: doc.rev};
-            for (let rowParams of doc.settings.groupParams.rows) {
+            for (let rowParams of doc.settings.groups.header.rows) {
                 group[rowParams.name] = doc.headerValues[rowParams.code];
             }
 
