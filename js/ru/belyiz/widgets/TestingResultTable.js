@@ -26,11 +26,41 @@
 
         if (testingResults) {
             for (let i = 0; i < testingResults.length; i++) {
-                html += this._getTestCaseHtml(testingResults[i]);
+                const testingResult = testingResults[i];
+                if (testingResult.testCaseInfo) {
+                    let settings = $.extend(true, {}, testingResult.testCaseInfo.settings);
+                    let headerValues = $.extend(true, {}, testingResult.testCaseInfo.headerValues);
+                    let blocksValues = $.extend(true, {}, testingResult.testCaseInfo.blocksValues);
 
-                if (i < testingResults.length - 1) {
-                    const columnsCount = this._calculateColumnsCount($(html)[0]);
-                    html += this._getTestCasesSeparatorHtml(columnsCount);
+                    settings.totalColumnsInRow += 2;
+                    for (let blockParams of settings.tests.blocks) {
+                        blockParams.columns.push(
+                            {
+                                "code": "testingResult",
+                                "colspan": 1,
+                                "width": "1%",
+                                "name": "Результат проверки",
+                                "inResult": true
+                            }, {
+                                "code": "testingComment",
+                                "colspan": 1,
+                                "width": "1%",
+                                "name": "Комментарий",
+                                "inResult": true
+                            }
+                        );
+                        for (let rowNum = 0; rowNum < blocksValues[blockParams.code].length; rowNum++) {
+                            const rowValues = blocksValues[blockParams.code][rowNum];
+                            const rowResult = testingResult.testingResult[blockParams.code][rowNum];
+                            rowValues.testingResult = rowResult.result;
+                            rowValues.testingComment = rowResult.comment;
+                        }
+                    }
+
+                    html += this._getTestCaseHtml(settings, headerValues, blocksValues);
+                    if (i < testingResult.length - 1) {
+                        html += this._getTestCasesSeparatorHtml(settings.totalColumnsInRow);
+                    }
                 }
             }
         }
@@ -40,55 +70,38 @@
 
     TestingResultTable.prototype._getGroupHtml = function (group) {
         let html = '';
-        const rows = group.settings.tests.header.rows;
+        const rows = group.settings.groups.header.rows;
         if (rows && rows.length) {
-            const colspan = rows[0].valueColspan + rows[0].colspan;
-            html += `<tr><td width="100%" colspan="${colspan}" style="text-align: center;"><b>ГРУППА:</b></td></tr>`;
-            for (let rowParam of rows) {
-                if (rowParam.inResult) {
-                    html += this._getHeaderRowHtml(rowParam, group.headerValues[rowParam.code]);
-                }
-            }
-            html += this._getTestCasesSeparatorHtml(colspan);
-            html += `<tr><td width="100%" colspan="${colspan}" style="text-align: center;"><b>ТЕСТ-КЕЙСЫ:</b></td></tr>`;
+            html += `<tr><td width="100%" colspan="${group.settings.totalColumnsInRow}" style="text-align: center;"><b>ГРУППА:</b></td></tr>`;
+            html += this._getHeaderRowHtml(group.settings, 'groups', group.headerValues);
+            html += this._getTestCasesSeparatorHtml(group.settings.totalColumnsInRow);
+            html += `<tr><td width="100%" colspan="${group.settings.totalColumnsInRow}" style="text-align: center;"><b>ТЕСТ-КЕЙСЫ:</b></td></tr>`;
         }
         return html;
     };
 
-    TestingResultTable.prototype._getTestCaseHtml = function (testingData) {
-        const testCaseData = testingData.testCaseInfo;
+    TestingResultTable.prototype._getTestCaseHtml = function (settings, headerValues, blocksValues) {
+        let html = this._getHeaderRowHtml(settings, 'tests', headerValues);
 
-        if (!testCaseData) {
-            return '';
-        }
-
-        let html = '';
-        for (let rowParam of testCaseData.settings.tests.header.rows) {
-            if (rowParam.inResult) {
-                html += this._getHeaderRowHtml(rowParam, testCaseData.headerValues[rowParam.code]);
-            }
-        }
-
-        for (let blockParams of testCaseData.settings.tests.blocks) {
+        for (let blockParams of settings.tests.blocks) {
+            html += `<tr><td width="100%" colspan="${settings.totalColumnsInRow}"><b>${blockParams.title}:</b></td></tr>`;
             html += this._getBlockTitlesHTML(blockParams);
 
             let rowNum = 1;
-            for (let rowData of testCaseData.blocksValues[blockParams.code]) {
-                if (this._checkCellsHasDataInResult(blockParams.cells, rowData)) {
+            for (let rowData of blocksValues[blockParams.code]) {
+                if (this._checkCellsHasDataInResult(blockParams.columns, rowData)) {
                     let rowContent = '';
-                    for (let cellParam of blockParams.cells) {
-                        let value = (cellParam.isOrderNumber ? rowNum : (rowData[cellParam.code] || '')) + '';
-                        if (this.useMarkDown) {
+                    for (let columnParams of blockParams.columns) {
+                        let value = (columnParams.type === 'orderNumber' ? rowNum : (rowData[columnParams.code] || '')) + '';
+                        if (settings.markdown) {
                             value = utils.TextUtils.markdownToHtml(value);
                         } else {
                             value = utils.TextUtils.brakesForExcelFix(value);
                         }
-                        if (cellParam.inResult) {
-                            rowContent += `<td colspan="${cellParam.colspan}" width="${cellParam.width}">${value}</td>`;
+                        if (columnParams.inResult) {
+                            rowContent += `<td colspan="${columnParams.colspan}" width="${columnParams.width}">${value}</td>`;
                         }
                     }
-                    const testingResult = testingData.testingResult[blockParams.code][rowNum - 1];
-                    rowContent += `<td>${testingResult.result || ''}</td><td>${testingResult.comment || ''}</td>`;
                     html += `<tr>${rowContent}</tr>`;
                     rowNum++;
                 }
@@ -97,59 +110,47 @@
         return html;
     };
 
-    TestingResultTable.prototype._getHeaderRowHtml = function (rowParam, value) {
-        if (this.useMarkDown) {
-            value = utils.TextUtils.markdownToHtml(value);
-        } else {
-            value = utils.TextUtils.brakesForExcelFix(value);
+    TestingResultTable.prototype._getHeaderRowHtml = function (settings, entityType, headerValues) {
+        let html = '';
+        let headerParams = settings[entityType].header;
+        for (let rowParam of headerParams.rows) {
+            if (rowParam.inResult) {
+                let value = headerValues[rowParam.code];
+                if (settings.markdown) {
+                    value = utils.TextUtils.markdownToHtml(value);
+                } else {
+                    value = utils.TextUtils.brakesForExcelFix(value);
+                }
+                html += `
+                    <tr>
+                        <td width="${headerParams.nameWidth}" colspan="${headerParams.nameColspan}"><b>${rowParam.name}:</b></td>
+                        <td colspan="${settings.totalColumnsInRow - headerParams.nameColspan}">${value}</td>
+                    </tr>
+                `;
+            }
         }
-        return `
-            <tr>
-                <td width="${rowParam.width}" colspan="${rowParam.colspan}"><b>${rowParam.name}:</b></td>
-                <td colspan="${rowParam.valueColspan + 2}">${value}</td>
-            </tr>
-        `;
+        return html;
     };
 
     TestingResultTable.prototype._getBlockTitlesHTML = function (blockParams) {
         let titleRowContent = '';
-        for (let cellParam of blockParams.cells) {
-            titleRowContent += `<td colspan="${cellParam.colspan}" width="${cellParam.width || ''}">${cellParam.name}</td>`
+        for (let columnParam of blockParams.columns) {
+            titleRowContent += `<td colspan="${columnParam.colspan}" width="${columnParam.width || ''}">${columnParam.name}</td>`
         }
-
-        return `
-            <tr>
-                <td colspan="${blockParams.title.colspan + 2}">
-                    <b>${blockParams.title.text}:</b>
-                </td>
-            </tr>
-            <tr>
-                ${titleRowContent}
-                <td>Результат проверки</td>
-                <td>Комментарий</td>
-            </tr>
-        `;
+        return `<tr>${titleRowContent}</tr>`;
     };
 
     TestingResultTable.prototype._getTestCasesSeparatorHtml = function (columnsCount) {
         return `<tr><td colspan="${columnsCount}">${this.brForExcel}${this.brForExcel}${this.brForExcel}</td></tr>`;
     };
 
-    TestingResultTable.prototype._checkCellsHasDataInResult = function (cells, rowData) {
-        for (let cellParam of cells) {
-            if (!cellParam.isOrderNumber && cellParam.inResult && rowData[cellParam.code]) {
+    TestingResultTable.prototype._checkCellsHasDataInResult = function (columns, rowData) {
+        for (let columnParams of columns) {
+            if (columnParams.type !== 'orderNumber' && columnParams.inResult && rowData[columnParams.code]) {
                 return true;
             }
         }
         return false;
-    };
-
-    TestingResultTable.prototype._calculateColumnsCount = function (tr) {
-        let columnsCount = 0;
-        for (let td of $(tr).find('td')) {
-            columnsCount += parseInt($(td).attr('colspan'));
-        }
-        return columnsCount;
     };
 
 })(window, window.ru.belyiz.patterns.Widget, window.ru.belyiz.utils, window.ru.belyiz.widgets);

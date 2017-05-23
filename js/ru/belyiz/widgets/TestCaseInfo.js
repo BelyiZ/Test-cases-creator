@@ -133,9 +133,9 @@
                 const $item = $(item);
                 testCaseData.blocksValues[blockSettings.code][rowNum - 1] = {};
                 if (this._checkRowHasData($item)) {
-                    for (let cellParam of blockSettings.cells) {
-                        if (cellParam.inInputs && !cellParam.isOrderNumber) {
-                            testCaseData.blocksValues[blockSettings.code][rowNum - 1][cellParam.code] = this._getCellValue($item, cellParam.code);
+                    for (let columnsParams of blockSettings.columns) {
+                        if (columnsParams.inInputs && columnsParams.type !== 'orderNumber') {
+                            testCaseData.blocksValues[blockSettings.code][rowNum - 1][columnsParams.code] = this._getCellValue($item, columnsParams.code);
                         }
                     }
                 }
@@ -220,7 +220,7 @@
             <table class="table">
                 <tbody id="${blockSettings.code}" class="js-input-data-table">
                     <tr>
-                        <th colspan="100%" class="text-center">${blockSettings.title.text.toUpperCase()}</th>
+                        <th colspan="100%" class="text-center">${blockSettings.title.toUpperCase()}</th>
                     </tr>
                     ${rowsHtml}
                 </tbody>
@@ -240,18 +240,18 @@
         const removedRow = merge && !serverRowValues && localRowValues;
 
         let rowContent = '';
-        for (let cellParam of blockSettings.cells) {
-            if (cellParam.inInputs) {
-                const localValue = localRowValues && localRowValues[cellParam.code] || '';
-                const serverValue = serverRowValues && serverRowValues[cellParam.code] || '';
+        for (let columnParam of blockSettings.columns) {
+            if (columnParam.inInputs) {
+                const localValue = localRowValues && localRowValues[columnParam.code] || '';
+                const serverValue = serverRowValues && serverRowValues[columnParam.code] || '';
                 const mergeConflict = !removedRow && !addedRow && merge && localValue !== serverValue;
                 const message = this._msgMergeConflict + (serverValue ? this._msgActualFieldValue + serverValue : this._msgServerFieldEmpty);
 
                 rowContent += `
-                    <td width="${cellParam.width || ''}">
+                    <td width="${columnParam.width || ''}">
                         <div class="form-group ${mergeConflict ? 'has-warning' : ''}">
-                            <textarea data-cell-code="${cellParam.code || ''}" class="form-control ${mergeConflict ? 'form-control-warning' : ''}" 
-                                      placeholder="${cellParam.name || ''}">${addedRow ? serverValue : localValue}</textarea>
+                            <textarea data-cell-code="${columnParam.code || ''}" class="form-control ${mergeConflict ? 'form-control-warning' : ''}" 
+                                      placeholder="${columnParam.name || ''}">${addedRow ? serverValue : localValue}</textarea>
                             <div class="form-control-feedback multiline">${mergeConflict ? message : ''}</div>
                         </div>
                     </td>

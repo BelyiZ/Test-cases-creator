@@ -183,12 +183,12 @@
 
     TestCaseExecute.prototype._getStepHtml = function (stepData, stepNumber, stepsCount) {
         let blockContent = '';
-        for (let cellParam of stepData.block.cells) {
-            if (cellParam.inInputs) {
+        for (let columnsParam of stepData.block.columns) {
+            if (columnsParam.inInputs) {
                 blockContent += `
                     <div>
-                         <small><b>${cellParam.name}:</b></small>
-                         ${stepData.values[cellParam.code]}
+                         <small><b>${columnsParam.name}:</b></small>
+                         ${stepData.values[columnsParam.code]}
                     </div>
                 `;
             }
