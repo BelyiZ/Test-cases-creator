@@ -11,10 +11,7 @@
     function TestCaseResultTable(setup) {
         setup = setup || {};
 
-        this.useMarkDown = !!setup.useMarkDown;
-
         this.$container = $(setup.container);
-        this.brForExcel = '<br style="mso-data-placement:same-cell;" />';
     }
 
     TestCaseResultTable.prototype.reDraw = function (testCases, group) {
@@ -26,10 +23,11 @@
 
         if (testCases) {
             for (let i = 0; i < testCases.length; i++) {
-                html += this._getTestCaseHtml(testCases[i]);
+                const testCase = testCases[i];
 
+                html += this._getTestCaseHtml(testCase.settings, testCase.headerValues, testCase.blocksValues);
                 if (i < testCases.length - 1) {
-                    html += this._getTestCasesSeparatorHtml(testCases[i].settings.totalColumnsInRow);
+                    html += this._getTestCasesSeparatorHtml(testCase.settings.totalColumnsInRow);
                 }
             }
         }
@@ -49,20 +47,20 @@
         return html;
     };
 
-    TestCaseResultTable.prototype._getTestCaseHtml = function (testCaseData) {
-        let html = this._getHeaderRowHtml(testCaseData.settings, 'tests', testCaseData.headerValues);
+    TestCaseResultTable.prototype._getTestCaseHtml = function (settings, headerValues, blocksValues) {
+        let html = this._getHeaderRowHtml(settings, 'tests', headerValues);
 
-        for (let blockParams of testCaseData.settings.tests.blocks) {
-            html += `<tr><td width="100%" colspan="${testCaseData.settings.totalColumnsInRow}"><b>${blockParams.title}:</b></td></tr>`;
+        for (let blockParams of settings.tests.blocks) {
+            html += `<tr><td width="100%" colspan="${settings.totalColumnsInRow}"><b>${blockParams.title}:</b></td></tr>`;
             html += this._getBlockTitlesHTML(blockParams);
 
             let rowNum = 1;
-            for (let rowData of testCaseData.blocksValues[blockParams.code]) {
+            for (let rowData of blocksValues[blockParams.code]) {
                 if (this._checkCellsHasDataInResult(blockParams.columns, rowData)) {
                     let rowContent = '';
                     for (let columnParams of blockParams.columns) {
                         let value = (columnParams.type === 'orderNumber' ? rowNum : (rowData[columnParams.code] || '')) + '';
-                        if (testCaseData.settings.markdown) {
+                        if (settings.markdown) {
                             value = utils.TextUtils.markdownToHtml(value);
                         } else {
                             value = utils.TextUtils.brakesForExcelFix(value);
@@ -110,7 +108,8 @@
     };
 
     TestCaseResultTable.prototype._getTestCasesSeparatorHtml = function (columnsCount) {
-        return `<tr><td colspan="${columnsCount}">${this.brForExcel}${this.brForExcel}${this.brForExcel}</td></tr>`;
+        const brForExcel = '<br style="mso-data-placement:same-cell;" />';
+        return `<tr><td colspan="${columnsCount}">${brForExcel}${brForExcel}${brForExcel}</td></tr>`;
     };
 
     TestCaseResultTable.prototype._checkCellsHasDataInResult = function (columns, rowData) {
