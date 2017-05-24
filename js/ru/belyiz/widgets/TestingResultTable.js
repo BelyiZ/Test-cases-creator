@@ -47,10 +47,12 @@
                             }
                         );
                         for (let rowNum = 0; rowNum < blocksValues[blockParams.code].length; rowNum++) {
-                            const rowValues = blocksValues[blockParams.code][rowNum];
-                            const rowResult = testingResult.testingResult[blockParams.code][rowNum];
-                            rowValues.testingResult = rowResult.result;
-                            rowValues.testingComment = rowResult.comment;
+                            if (testingResult.testingResult[blockParams.code]) {
+                                const rowValues = blocksValues[blockParams.code][rowNum];
+                                const rowResult = testingResult.testingResult[blockParams.code][rowNum];
+                                rowValues.testingResult = rowResult.result;
+                                rowValues.testingComment = rowResult.comment;
+                            }
                         }
                     }
 
