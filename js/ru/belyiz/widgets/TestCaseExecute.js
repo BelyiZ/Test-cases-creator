@@ -199,7 +199,7 @@
                  data-block-code="${stepData.block.code}" data-block-item-position="${stepData.rowInBlockNumber}">
                 <div class="card-header text-center">
                     <div class="p-2 d-inline-block"> 
-                        ${stepData.block.title.text} (${stepData.rowInBlockNumber + 1} ${this._textStepFrom} ${stepData.rowsInBlockCount})
+                        ${stepData.block.title} (${stepData.rowInBlockNumber + 1} ${this._textStepFrom} ${stepData.rowsInBlockCount})
                     </div>
                     <div class="btn-group ml-2 float-right" role="group">
                         <div class="btn btn-secondary js-step-result js-carousel-control" role="button" data-success="false" data-action="next">
