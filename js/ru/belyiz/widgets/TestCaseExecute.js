@@ -87,7 +87,8 @@
         if (testCaseInfo && testCaseInfo.id > -1) {
             this.testCaseInfo = testCaseInfo;
 
-            this.$container.append(this._getHeaderRowsHtml(testCaseInfo.settings.tests.header, testCaseInfo));
+            this.$container.append(this._getHeaderRowsHtml(testCaseInfo));
+            this.$container.append(this._getNotExecutableBlocksHtml(testCaseInfo));
 
             const steps = this._getAllSteps(testCaseInfo);
 
@@ -109,10 +110,12 @@
                 interval: false,
             });
 
-            this.trigger(this._eventNames.changed);
         } else {
+            this.testCaseInfo = null;
             this.$container.append(`<div class="alert alert-info"><i class="fa fa-arrow-left"></i> ${this._msgTestCaseNotSelected}</div>`);
         }
+
+        this.trigger(this._eventNames.changed);
     };
 
     TestCaseExecute.prototype.getData = function () {
@@ -139,15 +142,18 @@
 
         const blocks = testCaseInfo.settings.tests.blocks;
         for (let i = 0; i < blocks.length; i++) {
-            const blockValues = testCaseInfo.blocksValues[blocks[i].code];
-            for (let j = 0; j < blockValues.length; j++) {
-                const rowValues = blockValues[j];
-                steps.push({
-                    block: blocks[i],
-                    values: rowValues,
-                    rowInBlockNumber: j,
-                    rowsInBlockCount: blockValues.length,
-                });
+            const blockParams = blocks[i];
+            if (blockParams.executable) {
+                const blockValues = testCaseInfo.blocksValues[blocks[i].code];
+                for (let j = 0; j < blockValues.length; j++) {
+                    const rowValues = blockValues[j];
+                    steps.push({
+                        block: blockParams,
+                        values: rowValues,
+                        rowInBlockNumber: j,
+                        rowsInBlockCount: blockValues.length,
+                    });
+                }
             }
         }
 
@@ -157,19 +163,18 @@
     /**
      * Генерирует HTML для полей ввода шапки таблицы
      *
-     * @param headerParams параметры полей ввода шапки таблицы
      * @param testCaseInfo данные локально-сохраненного тест-кейса, подставляются в поля ввода
      * @returns {string}
      * @private
      */
-    TestCaseExecute.prototype._getHeaderRowsHtml = function (headerParams, testCaseInfo) {
-        testCaseInfo = testCaseInfo || {};
+    TestCaseExecute.prototype._getHeaderRowsHtml = function (testCaseInfo) {
+        const headerParams = testCaseInfo.settings.tests.header;
         let rowsHtml = '';
         for (let rowParam of headerParams.rows) {
             if (rowParam.inInputs) {
                 rowsHtml += `
-                    <div class="mb-2">
-                        <small><b>${rowParam.name}:</b></small>
+                    <div class="mb-1">
+                        <b>${rowParam.name}:</b>
                         ${(testCaseInfo.headerValues && testCaseInfo.headerValues[rowParam.code]) || ''}
                     </div>
                 `;
@@ -179,6 +184,29 @@
         return `
             <div id="testHeaderRows">${rowsHtml}</div>
         `;
+    };
+
+    /**
+     * Генерирует HTML для полей ввода шапки таблицы
+     *
+     * @param testCaseInfo данные локально-сохраненного тест-кейса, подставляются в поля ввода
+     * @returns {string}
+     * @private
+     */
+    TestCaseExecute.prototype._getNotExecutableBlocksHtml = function (testCaseInfo) {
+        let html = '';
+        for (let blockParams of testCaseInfo.settings.tests.blocks) {
+            const values = testCaseInfo.blocksValues[blockParams.code];
+            if (!blockParams.executable) {
+                html += `
+                    <h5 class="mt-4 text-center">${blockParams.title}</h5>
+                    <table class="table table-hover table-sm">
+                        ${utils.HtmlGenerator.generateTableForBlock(blockParams, values, testCaseInfo.settings.markdown)}
+                    </table>
+                `;
+            }
+        }
+        return html;
     };
 
     TestCaseExecute.prototype._getStepHtml = function (stepData, stepNumber, stepsCount) {

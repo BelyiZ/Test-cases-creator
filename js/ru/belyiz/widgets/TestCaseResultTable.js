@@ -52,27 +52,7 @@
 
         for (let blockParams of settings.tests.blocks) {
             html += `<tr><td width="100%" colspan="${settings.totalColumnsInRow}"><b>${blockParams.title}:</b></td></tr>`;
-            html += this._getBlockTitlesHTML(blockParams);
-
-            let rowNum = 1;
-            for (let rowData of blocksValues[blockParams.code]) {
-                if (this._checkCellsHasDataInResult(blockParams.columns, rowData)) {
-                    let rowContent = '';
-                    for (let columnParams of blockParams.columns) {
-                        let value = (columnParams.type === 'orderNumber' ? rowNum : (rowData[columnParams.code] || '')) + '';
-                        if (settings.markdown) {
-                            value = utils.TextUtils.markdownToHtml(value);
-                        } else {
-                            value = utils.TextUtils.brakesForExcelFix(value);
-                        }
-                        if (columnParams.inResult) {
-                            rowContent += `<td colspan="${columnParams.colspan}" width="${columnParams.width}">${value}</td>`;
-                        }
-                    }
-                    html += `<tr>${rowContent}</tr>`;
-                    rowNum++;
-                }
-            }
+            html += utils.HtmlGenerator.generateTableForBlock(blockParams, blocksValues[blockParams.code], settings.markdown, false);
         }
         return html;
     };
@@ -99,26 +79,10 @@
         return html;
     };
 
-    TestCaseResultTable.prototype._getBlockTitlesHTML = function (blockParams) {
-        let titleRowContent = '';
-        for (let columnParam of blockParams.columns) {
-            titleRowContent += `<td colspan="${columnParam.colspan}" width="${columnParam.width || ''}">${columnParam.name}</td>`
-        }
-        return `<tr>${titleRowContent}</tr>`;
-    };
-
     TestCaseResultTable.prototype._getTestCasesSeparatorHtml = function (columnsCount) {
         const brForExcel = '<br style="mso-data-placement:same-cell;" />';
         return `<tr><td colspan="${columnsCount}">${brForExcel}${brForExcel}${brForExcel}</td></tr>`;
     };
 
-    TestCaseResultTable.prototype._checkCellsHasDataInResult = function (columns, rowData) {
-        for (let columnParams of columns) {
-            if (columnParams.type !== 'orderNumber' && columnParams.inResult && rowData[columnParams.code]) {
-                return true;
-            }
-        }
-        return false;
-    };
 
 })(window, window.ru.belyiz.patterns.Widget, window.ru.belyiz.utils, window.ru.belyiz.widgets);

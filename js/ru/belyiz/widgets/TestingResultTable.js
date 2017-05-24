@@ -23,41 +23,23 @@
 
         if (testingResults) {
             for (let i = 0; i < testingResults.length; i++) {
-                const testingResult = testingResults[i];
-                if (testingResult.testCaseInfo) {
-                    let settings = $.extend(true, {}, testingResult.testCaseInfo.settings);
-                    let headerValues = $.extend(true, {}, testingResult.testCaseInfo.headerValues);
-                    let blocksValues = $.extend(true, {}, testingResult.testCaseInfo.blocksValues);
+                const testingData = testingResults[i];
+                if (testingData.testCaseInfo) {
+                    let settings = $.extend(true, {}, testingData.testCaseInfo.settings);
+                    let headerValues = $.extend(true, {}, testingData.testCaseInfo.headerValues);
+                    let blocksValues = $.extend(true, {}, testingData.testCaseInfo.blocksValues);
 
                     settings.totalColumnsInRow += 2;
                     for (let blockParams of settings.tests.blocks) {
-                        blockParams.columns.push(
-                            {
-                                "code": "testingResult",
-                                "colspan": 1,
-                                "width": "1%",
-                                "name": "Результат проверки",
-                                "inResult": true
-                            }, {
-                                "code": "testingComment",
-                                "colspan": 1,
-                                "width": "1%",
-                                "name": "Комментарий",
-                                "inResult": true
-                            }
-                        );
-                        for (let rowNum = 0; rowNum < blocksValues[blockParams.code].length; rowNum++) {
-                            if (testingResult.testingResult[blockParams.code]) {
-                                const rowValues = blocksValues[blockParams.code][rowNum];
-                                const rowResult = testingResult.testingResult[blockParams.code][rowNum];
-                                rowValues.testingResult = rowResult.result;
-                                rowValues.testingComment = rowResult.comment;
-                            }
+                        if (blockParams.executable) {
+                            this._addResultColumnsIntoBlock(blockParams, blocksValues[blockParams.code], testingData.testingResult[blockParams.code]);
+                        } else {
+                            blockParams.columns[blockParams.columns.length - 1].colspan += 2;
                         }
                     }
 
                     html += this._getTestCaseHtml(settings, headerValues, blocksValues);
-                    if (i < testingResult.length - 1) {
+                    if (i < testingData.length - 1) {
                         html += this._getTestCasesSeparatorHtml(settings.totalColumnsInRow);
                     }
                 }
@@ -65,6 +47,33 @@
         }
 
         this.$container.html(html);
+    };
+
+    TestingResultTable.prototype._addResultColumnsIntoBlock = function (blockParams, blockValues, testingResult) {
+        blockParams.columns.push(
+            {
+                "code": "testingResult",
+                "colspan": 1,
+                "width": "1%",
+                "name": "Результат проверки",
+                "inResult": true
+            }, {
+                "code": "testingComment",
+                "colspan": 1,
+                "width": "1%",
+                "name": "Комментарий",
+                "inResult": true
+            }
+        );
+
+        if (testingResult) {
+            for (let rowNum = 0; rowNum < blockValues.length; rowNum++) {
+                const rowValues = blockValues[rowNum];
+                const rowResult = testingResult[rowNum];
+                rowValues.testingResult = rowResult.result;
+                rowValues.testingComment = rowResult.comment;
+            }
+        }
     };
 
 })(window, window.ru.belyiz.widgets.TestCaseResultTable, window.ru.belyiz.utils, window.ru.belyiz.widgets);
