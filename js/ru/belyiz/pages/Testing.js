@@ -186,13 +186,14 @@
         this.$itemsListContainer.html(`
             <ul class="nav nav-tabs" role="tablist">
                 <li class="nav-item">
-                <!--todo попробовать data-target-->
-                    <a class="nav-link js-testing-sidebar-tab ${this.defaultEntityType === 'tests' ? 'active' : ''}"
-                       href="#testing--type-tests" data-toggle="tab" role="tab" data-entity-type="tests">Тест-кейсы</a>
+                    <a class="nav-link js-testing-sidebar-tab ${this.defaultEntityType === 'tests' ? 'active' : ''}" href="javascript:;"
+                       data-target=".js-testing-sidebar-pane[data-entity-type='tests']" data-toggle="tab" role="tab" 
+                       data-entity-type="tests">Тест-кейсы</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link js-testing-sidebar-tab ${this.defaultEntityType === 'groups' ? 'active' : ''}"
-                       href="#testing--type-groups" data-toggle="tab" role="tab" data-entity-type="groups">Группы</a>
+                    <a class="nav-link js-testing-sidebar-tab ${this.defaultEntityType === 'groups' ? 'active' : ''}" href="javascript:;"
+                       data-target=".js-testing-sidebar-pane[data-entity-type='groups']" data-toggle="tab" role="tab" 
+                       data-entity-type="groups">Группы</a>
                 </li>
             </ul>
             <div class="tab-content">
