@@ -92,7 +92,7 @@
     };
 
     ItemsList.prototype.resetSelection = function () {
-        this.$container.find('.active').removeClass('active');
+        this.$container.find('.js-items-list-item.active').removeClass('active');
         this.$container.find('.js-checkbox').addClass('fa-square-o').removeClass('fa-check-square-o');
     };
 

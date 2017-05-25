@@ -14,34 +14,35 @@
         this.$container = $(setup.container);
     }
 
-    TestingResultTable.prototype.reDraw = function (testingResults, group) {
+    TestingResultTable.prototype.reDraw = function (entireTestingResult) {
         let html = '';
 
-        if (group) {
-            html += this._getGroupHtml(group);
+        if (entireTestingResult.group) {
+            let settings = $.extend(true, {}, entireTestingResult.group.settings);
+            settings.totalColumnsInRow += 2;
+            html += this._getGroupHtml(settings, entireTestingResult.group.headerValues);
         }
 
-        if (testingResults) {
-            for (let i = 0; i < testingResults.length; i++) {
-                const testingData = testingResults[i];
-                if (testingData.testCaseInfo) {
-                    let settings = $.extend(true, {}, testingData.testCaseInfo.settings);
-                    let headerValues = $.extend(true, {}, testingData.testCaseInfo.headerValues);
-                    let blocksValues = $.extend(true, {}, testingData.testCaseInfo.blocksValues);
+        for (let i = 0; i < entireTestingResult.testCases.length; i++) {
+            const testCase = entireTestingResult.testCases[i];
+            const testingResult = entireTestingResult.testingResult[testCase.id];
+            if (testingResult) {
+                let settings = $.extend(true, {}, testCase.settings);
+                let headerValues = $.extend(true, {}, testCase.headerValues);
+                let blocksValues = $.extend(true, {}, testCase.blocksValues);
 
-                    settings.totalColumnsInRow += 2;
-                    for (let blockParams of settings.tests.blocks) {
-                        if (blockParams.executable) {
-                            this._addResultColumnsIntoBlock(blockParams, blocksValues[blockParams.code], testingData.testingResult[blockParams.code]);
-                        } else {
-                            blockParams.columns[blockParams.columns.length - 1].colspan += 2;
-                        }
+                settings.totalColumnsInRow += 2;
+                for (let blockParams of settings.tests.blocks) {
+                    if (blockParams.executable) {
+                        this._addResultColumnsIntoBlock(blockParams, blocksValues[blockParams.code], testingResult[blockParams.code]);
+                    } else {
+                        blockParams.columns[blockParams.columns.length - 1].colspan += 2;
                     }
+                }
 
-                    html += this._getTestCaseHtml(settings, headerValues, blocksValues);
-                    if (i < testingData.length - 1) {
-                        html += this._getTestCasesSeparatorHtml(settings.totalColumnsInRow);
-                    }
+                html += this._getTestCaseHtml(settings, headerValues, blocksValues);
+                if (i < entireTestingResult.testCases.length - 1) {
+                    html += this._getTestCasesSeparatorHtml(settings.totalColumnsInRow);
                 }
             }
         }

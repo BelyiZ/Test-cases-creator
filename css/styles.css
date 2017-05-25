@@ -12,7 +12,7 @@ textarea {
     resize: none;
     overflow: hidden;
     min-height: 55px;
-    color: #000 !important;
+    color: rgb(0, 0, 0) !important;
 }
 
 @-moz-document url-prefix() {
@@ -34,6 +34,10 @@ textarea {
     cursor: grabbing;
     cursor: -moz-grabbing;
     cursor: -webkit-grabbing;
+}
+
+.clickable {
+    cursor: pointer;
 }
 
 .big-icon {
@@ -63,14 +67,14 @@ textarea {
 
 .card.actual-server-value {
     margin-bottom: .25rem;
-    border-color: #f0ad4e;
+    border-color: rgb(240, 173, 78);
 }
 
 .card.actual-server-value .card-header {
     padding: .25rem .75rem;
-    color: #fff;
-    border-color: #f0ad4e;
-    background-color: #f0ad4e;
+    color: rgb(255, 255, 255);
+    border-color: rgb(240, 173, 78);
+    background-color: rgb(240, 173, 78);
 }
 
 .card.actual-server-value .card-block {
@@ -88,4 +92,11 @@ textarea {
 .vertical-text {
     transform: rotate(270deg);
     transform-origin: left top 0;
+}
+
+/*Страница тестирования. Боковая панель*/
+.js-testing-sidebar-pane .list-group-item:first-child {
+    border-top: 0;
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
 }

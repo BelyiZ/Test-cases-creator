@@ -78,12 +78,13 @@
     Main.prototype._showPage = function (pageCode) {
         pageCode = pageCode || this._getCurrentUrlHash();
 
+        const actualPageCode = this.$pagesLinks.filter('.active').attr('href').substring(1);
+        if (actualPageCode && this.initPages[actualPageCode]) {
+            this.initPages[actualPageCode].disable();
+        }
+
         this.$pagesLinks.removeClass('active');
         this.$pagesLinks.filter(`[href="#${pageCode}"]`).addClass('active');
-
-        $.each(this.initPages, function (pageCode, page) {
-            page.disable();
-        });
 
         if (!this.initPages[pageCode]) {
             this.initPages[pageCode] = new pages[pageCode]().initialize();

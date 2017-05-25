@@ -1,22 +1,22 @@
-/** @namespace window.ru.belyiz.widgets.TestCaseExecute */
+/** @namespace window.ru.belyiz.widgets.TestingSteps */
 
 (function (global, Pattern, utils, widgets) {
     'use strict';
-    utils.Package.declare('ru.belyiz.widgets.TestCaseExecute', TestCaseExecute);
-    Pattern.extend(TestCaseExecute);
+    utils.Package.declare('ru.belyiz.widgets.TestingSteps', TestingSteps);
+    Pattern.extend(TestingSteps);
 
     /**
+     * Виджет для блока прохождения по тест-кейсу или группе
      * @constructor
      */
-    function TestCaseExecute(setup) {
+    function TestingSteps(setup) {
         setup = setup || {};
 
         this.$container = $(setup.container);
         this.testCasesService = setup.entityService;
 
-        this.$carousel = null;
-
-        this.testCaseInfo = '';
+        this.testCases = [];
+        this.group = null;
 
         this._msgMergeConflict = 'Данные на сервере изменились. ';
         this._msgTestCaseNotSelected = 'Выберите тест кейс или группу в списке слева';
@@ -29,36 +29,30 @@
         this._textStep = 'Шаг';
         this._textStepFrom = 'из';
 
-
         this._eventHandlers = {};
         this._eventNames = {
             changed: 'changed',
         };
     }
 
-    TestCaseExecute.prototype._createWidgets = function () {
-    };
-
-    TestCaseExecute.prototype._bindEvents = function () {
+    TestingSteps.prototype._bindEvents = function () {
         this.$container.on('click', '.js-carousel-control', this._events.onCarouselControlClick.bind(this));
         this.$container.on('click', '.js-step-result', this._events.onStepResultClick.bind(this));
         this.$container.on('change', '.js-step-result-comment', this._events.onStepResultCommentChanged.bind(this));
     };
 
-    TestCaseExecute.prototype._events = {
+    TestingSteps.prototype._events = {
         onCarouselControlClick: function (e) {
-            if (!this.$carousel) {
-                return;
-            }
             const $target = $(e.currentTarget);
+            const $carousel = $target.closest('.js-test-case-steps-carousel');
             const action = $target.data('action');
-            const $activeSlide = this.$carousel.find('.js-testing-step.active');
+            const $activeSlide = $carousel.find('.js-testing-step.active');
             if (action === 'prev' && $activeSlide.is(':first-child') ||
                 action === 'next' && $activeSlide.is(':last-child')) {
                 return;
             }
 
-            this.$carousel && this.$carousel.carousel(action);
+            $carousel.carousel(action);
         },
 
         onStepResultClick: function (e) {
@@ -81,70 +75,109 @@
         }
     };
 
-    TestCaseExecute.prototype.reDraw = function (testCaseInfo) {
+    TestingSteps.prototype.reDraw = function (entity = null) {
         this.$container.html('');
 
-        if (testCaseInfo && testCaseInfo.id > -1) {
-            this.testCaseInfo = testCaseInfo;
+        this.group = entity && entity.group ? entity.group : null;
+        this.testCases = entity ? (entity.group ? entity.sortedTestCases : [entity]) : [];
 
-            this.$container.append(this._getHeaderRowsHtml(testCaseInfo));
-            this.$container.append(this._getNotExecutableBlocksHtml(testCaseInfo));
-
-            const steps = this._getAllSteps(testCaseInfo);
-
-            let stepsHtml = '';
-            const noneStepsHtml = `<div class="alert alert-info">${this._msgNoneSteps}</div>`;
-            for (let i = 0; i < steps.length; i++) {
-                stepsHtml += this._getStepHtml(steps[i], i + 1, steps.length);
+        if (this.testCases.length) {
+            let $accordion = $('<div id="testingStepsAccordion" role="tablist" aria-multiselectable="false"></div>');
+            for (let testCase of this.testCases) {
+                $accordion.append(this._getTestCaseHTML(testCase, !$accordion.children().length));
             }
+            this.$container.append($accordion);
 
-            this.$container.append(`
-                <div id="testExecutingStepsCarousel" class="carousel slide over mt-4 mb-5">
-                    <div class="carousel-inner" role="listbox">${stepsHtml || noneStepsHtml}</div>
-                </div>
-            `);
-
-            this.$carousel = $('#testExecutingStepsCarousel').carousel({
+            $('.js-test-case-steps-carousel').carousel({
                 ride: false,
                 keyboard: true,
                 interval: false,
             });
-
         } else {
-            this.testCaseInfo = null;
             this.$container.append(`<div class="alert alert-info"><i class="fa fa-arrow-left"></i> ${this._msgTestCaseNotSelected}</div>`);
         }
 
         this.trigger(this._eventNames.changed);
     };
 
-    TestCaseExecute.prototype.getData = function () {
-        let testingResult = {};
+    /**
+     * Собирает актуальные данные тестирования по всему тест-кейсу/группе
+     * @returns {{testCases: *, group: *, testingResult: {}}}
+     */
+    TestingSteps.prototype.getData = function () {
+        const entireTestingResult = {
+            testCases: this.testCases,
+            group: this.group,
+            testingResult: {}
+        };
 
-        $('.js-testing-step').each((i, obj) => {
-            const $step = $(obj);
-            testingResult[$step.data('blockCode')] = testingResult[$step.data('blockCode')] || {};
-            testingResult[$step.data('blockCode')][$step.data('blockItemPosition')] = {
-                result: $step.data('success'),
-                comment: $step.find('.js-step-result-comment').val()
-            }
+        $('.js-test-case-steps-carousel').each((i, obj) => {
+            let testingResult = {};
+            const $carousel = $(obj);
+            $carousel.find('.js-testing-step').each((j, obj) => {
+                const $step = $(obj);
+                testingResult[$step.data('blockCode')] = testingResult[$step.data('blockCode')] || {};
+                testingResult[$step.data('blockCode')][$step.data('blockItemPosition')] = {
+                    result: $step.data('success'),
+                    comment: $step.find('.js-step-result-comment').val()
+                }
+            });
+            entireTestingResult.testingResult[$carousel.data('testCaseId')] = testingResult;
         });
 
-        return {
-            testCaseInfo: this.testCaseInfo,
-            testingResult: testingResult
-        }
+        return entireTestingResult;
     };
 
+    /**
+     * Формирует HTML для прохождения по тест-кейсу
+     * @param testCase данные тест-кейса
+     * @param expanded индикатор указывающий на необходимость отображать блок открытым сразу после инициализации
+     * @returns {string}
+     * @private
+     */
+    TestingSteps.prototype._getTestCaseHTML = function (testCase, expanded = false) {
+        let stepsHtml = '';
+        const steps = this._getAllSteps(testCase);
+        const stepsEmptyHtml = `<div class="alert alert-info">${this._msgNoneSteps}</div>`;
+        for (let i = 0; i < steps.length; i++) {
+            stepsHtml += this._getStepHtml(steps[i], i + 1, steps.length);
+        }
 
-    TestCaseExecute.prototype._getAllSteps = function (testCaseInfo) {
+        return `
+            <div class="card">
+                <div class="card-header" role="tab" id="heading${testCase.id}">
+                    <div class="clickable" data-toggle="collapse" data-parent="#testingStepsAccordion" data-target="#collapse${testCase.id}" 
+                         aria-expanded="${expanded}" aria-controls="collapse${testCase.id}">
+                        ${this._getHeaderRowsHtml(testCase)}
+                    </div>
+                </div>
+                
+                <div id="collapse${testCase.id}" class="collapse ${expanded ? 'show' : ''}" role="tabpanel" aria-labelledby="heading${testCase.id}">
+                    <div class="card-block">
+                        ${this._getNotExecutableBlocksHtml(testCase)}
+                        <div class="carousel slide over mt-4 mb-5 js-test-case-steps-carousel" data-test-case-id="${testCase.id}">
+                            <div class="carousel-inner" role="listbox">${stepsHtml || stepsEmptyHtml}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    };
+
+    /**
+     * Выделяет из данных тест кейса шаги тестирования, т.е. используются только блоки данных, помеченные как исполняемые (executable
+     * @param testCase данные тест-кейса
+     * @returns {Array}
+     * @private
+     */
+    TestingSteps.prototype._getAllSteps = function (testCase) {
         let steps = [];
 
-        const blocks = testCaseInfo.settings.tests.blocks;
+        const blocks = testCase.settings.tests.blocks;
         for (let i = 0; i < blocks.length; i++) {
             const blockParams = blocks[i];
             if (blockParams.executable) {
-                const blockValues = testCaseInfo.blocksValues[blocks[i].code];
+                const blockValues = testCase.blocksValues[blocks[i].code];
                 for (let j = 0; j < blockValues.length; j++) {
                     const rowValues = blockValues[j];
                     steps.push({
@@ -167,13 +200,13 @@
      * @returns {string}
      * @private
      */
-    TestCaseExecute.prototype._getHeaderRowsHtml = function (testCaseInfo) {
+    TestingSteps.prototype._getHeaderRowsHtml = function (testCaseInfo) {
         const headerParams = testCaseInfo.settings.tests.header;
         let rowsHtml = '';
         for (let rowParam of headerParams.rows) {
             if (rowParam.inInputs) {
                 rowsHtml += `
-                    <div class="mb-1">
+                    <div>
                         <b>${rowParam.name}:</b>
                         ${(testCaseInfo.headerValues && testCaseInfo.headerValues[rowParam.code]) || ''}
                     </div>
@@ -193,7 +226,7 @@
      * @returns {string}
      * @private
      */
-    TestCaseExecute.prototype._getNotExecutableBlocksHtml = function (testCaseInfo) {
+    TestingSteps.prototype._getNotExecutableBlocksHtml = function (testCaseInfo) {
         let html = '';
         for (let blockParams of testCaseInfo.settings.tests.blocks) {
             const values = testCaseInfo.blocksValues[blockParams.code];
@@ -209,7 +242,15 @@
         return html;
     };
 
-    TestCaseExecute.prototype._getStepHtml = function (stepData, stepNumber, stepsCount) {
+    /**
+     * Генерирует HTML одного шага тестирования
+     * @param stepData данные шага тестирования
+     * @param stepNumber номер шага
+     * @param stepsCount общее количество шагов в тест-кейсе
+     * @returns {string}
+     * @private
+     */
+    TestingSteps.prototype._getStepHtml = function (stepData, stepNumber, stepsCount) {
         let blockContent = '';
         for (let columnsParam of stepData.block.columns) {
             if (columnsParam.inInputs) {
