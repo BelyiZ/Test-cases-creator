@@ -68,7 +68,6 @@
         this._unbindWidgetsEvents();
         this.testingStepsWidget.on('changed', this._events.onTestingResultChanged, this);
         services.DatabaseService.on('dbChanged', this._events.onDatabaseChanged, this);
-        services.DatabaseService.on('dbSynchronized', this._events.onDatabaseSynchronized, this);
 
         this.testsListWidget && this.testsListWidget.on('selected', this._events.onItemSelected, this);
         this.groupsListWidget && this.groupsListWidget.on('selected', this._events.onItemSelected, this);
@@ -77,7 +76,6 @@
     Testing.prototype._unbindWidgetsEvents = function () {
         this.testingStepsWidget.off('changed', this._events.onTestingResultChanged);
         services.DatabaseService.off('dbChanged', this._events.onDatabaseChanged);
-        services.DatabaseService.off('dbSynchronized', this._events.onDatabaseSynchronized);
 
         this.testsListWidget && this.testsListWidget.off('selected', this._events.onItemSelected);
         this.groupsListWidget && this.groupsListWidget.off('selected', this._events.onItemSelected);
@@ -117,11 +115,6 @@
         onDatabaseChanged: function () {
             this.showEntitiesList();
             this.showEntityInfo();
-        },
-
-        // Когда закончилась синхронизация локальной и серверной БД
-        onDatabaseSynchronized: function () {
-            // todo перезапустить или продолжить
         },
 
         // Когда выбран элемент в списке сущностей

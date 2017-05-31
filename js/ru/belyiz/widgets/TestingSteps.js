@@ -24,6 +24,8 @@
         this._textComment = 'Комментарий';
         this._textSuccess = 'Выполнен';
         this._textFail = 'Провален';
+        this._textBlocked = 'Блокирован';
+        this._textStepBlocked = 'Тест провален - шаг заблокирован';
         this._textPreviousStep = 'Предыдущий шаг';
         this._textNextStep = 'Следующий шаг';
         this._textStep = 'Шаг';
@@ -59,13 +61,14 @@
             const $target = $(e.currentTarget);
             const success = $target.data('success');
 
-            $target.closest('.js-testing-step').data('success', success ? this._textSuccess : this._textFail);
-
             $target
                 .addClass(success ? 'btn-success' : 'btn-danger')
-                .siblings('.js-step-result')
-                .removeClass('btn-success btn-danger')
-                .addClass('btn-secondary');
+                .closest('.js-testing-step').data('status', success ? this._textSuccess : this._textFail).end()
+                .siblings('.js-step-result').removeClass('btn-success btn-danger').addClass('btn-secondary');
+
+            const $stepsCarousel = $target.closest('.js-test-case-steps-carousel');
+            this._markStepsAsBlocked($stepsCarousel);
+            this._showTestCaseStatus($stepsCarousel);
 
             this.trigger(this._eventNames.changed);
         },
@@ -73,6 +76,75 @@
         onStepResultCommentChanged: function () {
             this.trigger(this._eventNames.changed);
         }
+    };
+
+    /**
+     * Проставляет доступность шагов тест-кейса в зависимости от результата предыдущих.
+     * После проваленного шага все остальные блокируются и тест помечается как проваленный.
+     * @param stepsCarousel карусель с шагами тест-кейса
+     * @private
+     */
+    TestingSteps.prototype._markStepsAsBlocked = function (stepsCarousel) {
+        let afterFailedStep = false;
+        stepsCarousel.find('.js-testing-step').each((i, obj) => {
+            const $step = $(obj);
+            if (afterFailedStep) {
+                $step.data('status', this._textBlocked)
+                    .find('textarea').prop('disabled', true).val('').end()
+                    .find('.js-step-result').hide().end()
+                    .find('.js-step-blocked-text').show();
+            } else if ($step.data('status') === this._textFail) {
+                afterFailedStep = true;
+            } else if ($step.data('status') === this._textBlocked) {
+                $step.data('status', '')
+                    .find('textarea').prop('disabled', false).end()
+                    .find('.js-step-result').removeClass('btn-success btn-danger').show().end()
+                    .find('.js-step-blocked-text').hide();
+            }
+        });
+    };
+
+    /**
+     * Вычисляет и показывает статус всего тест-кейса. Статусы могут быть:
+     * провален - если хотя бы один из шагов провален,
+     * тестируется - если есть незавершенные шаги,
+     * выполнен - если все шаги выполнены
+     * @param stepsCarousel карусель с шагами тест-кейса
+     * @private
+     */
+    TestingSteps.prototype._showTestCaseStatus = function (stepsCarousel) {
+
+        const $steps = stepsCarousel.find('.js-testing-step');
+        const $statusField = stepsCarousel.closest('.card').find('.js-test-case-result');
+        const $statusIcon = $statusField.find('.fa');
+
+        $statusField.removeClass('bg-success bg-info bg-danger');
+        $statusIcon.removeClass('fa-hourglass-half fa-thumbs-up fa-thumbs-down');
+
+        if ($steps.filter((i, obj) => $(obj).data('status') === this._textFail).length) {
+            $statusField.addClass('bg-danger');
+            $statusIcon.addClass('fa-thumbs-down');
+            this._showNextTestCase(stepsCarousel.closest('.card'));
+        } else if ($steps.filter((i, obj) => $(obj).data('status') === this._textSuccess).length === $steps.length) {
+            $statusField.addClass('bg-success');
+            $statusIcon.addClass('fa-thumbs-up');
+            this._showNextTestCase(stepsCarousel.closest('.card'));
+        } else {
+            $statusField.addClass('bg-info');
+            $statusIcon.addClass('fa-hourglass-half');
+        }
+    };
+
+    /**
+     * Скрывает текущий тест-кейс и открывает следующий
+     * @param testCaseCard карточка текущего тест-кейса
+     * @private
+     */
+    TestingSteps.prototype._showNextTestCase = function (testCaseCard) {
+        testCaseCard
+            .find('.collapse').collapse('hide').end()
+            .next('.card')
+            .find('.collapse').collapse('show');
     };
 
     TestingSteps.prototype.reDraw = function (entity = null) {
@@ -118,7 +190,7 @@
                 const $step = $(obj);
                 testingResult[$step.data('blockCode')] = testingResult[$step.data('blockCode')] || {};
                 testingResult[$step.data('blockCode')][$step.data('blockItemPosition')] = {
-                    result: $step.data('success'),
+                    result: $step.data('status'),
                     comment: $step.find('.js-step-result-comment').val()
                 }
             });
@@ -146,16 +218,21 @@
         return `
             <div class="card">
                 <div class="card-header" role="tab" id="heading${testCase.id}">
-                    <div class="clickable" data-toggle="collapse" data-parent="#testingStepsAccordion" data-target="#collapse${testCase.id}" 
+                    <div class="clickable row" data-toggle="collapse" data-parent="#testingStepsAccordion" data-target="#collapse${testCase.id}" 
                          aria-expanded="${expanded}" aria-controls="collapse${testCase.id}">
-                        ${this._getHeaderRowsHtml(testCase)}
+                        <div class="col-sm-9 col-md-10 col-lg-11">${this._getHeaderRowsHtml(testCase)}</div>
+                        <div class="col-sm-3 col-md-2 col-lg-1">
+                            <div class="js-test-case-result rounded-circle">
+                                <i class="fa fa-2x p-3"></i>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 
                 <div id="collapse${testCase.id}" class="collapse ${expanded ? 'show' : ''}" role="tabpanel" aria-labelledby="heading${testCase.id}">
                     <div class="card-block">
                         ${this._getNotExecutableBlocksHtml(testCase)}
-                        <div class="carousel slide over mt-4 mb-5 js-test-case-steps-carousel" data-test-case-id="${testCase.id}">
+                        <div class="carousel slide over mt-4 js-test-case-steps-carousel" data-test-case-id="${testCase.id}">
                             <div class="carousel-inner" role="listbox">${stepsHtml || stepsEmptyHtml}</div>
                         </div>
                     </div>
@@ -232,7 +309,7 @@
             const values = testCaseInfo.blocksValues[blockParams.code];
             if (!blockParams.executable) {
                 html += `
-                    <h5 class="mt-4 text-center">${blockParams.title}</h5>
+                    <h5 class="text-center">${blockParams.title}</h5>
                     <table class="table table-hover table-sm">
                         ${utils.HtmlGenerator.generateTableForBlock(blockParams, values, testCaseInfo.settings.markdown)}
                     </table>
@@ -264,19 +341,20 @@
         }
 
         return `
-            <div class="card carousel-item js-testing-step ${stepNumber === 1 ? 'active' : ''}" 
+            <div class="card carousel-item js-testing-step ${stepNumber === 1 ? 'active' : ''}" data-step-number="${stepNumber}"
                  data-block-code="${stepData.block.code}" data-block-item-position="${stepData.rowInBlockNumber}">
                 <div class="card-header text-center">
-                    <div class="p-2 d-inline-block"> 
+                    <div class="pt-2 d-inline-block"> 
                         ${stepData.block.title} (${stepData.rowInBlockNumber + 1} ${this._textStepFrom} ${stepData.rowsInBlockCount})
                     </div>
                     <div class="btn-group ml-2 float-right" role="group">
-                        <div class="btn btn-secondary js-step-result js-carousel-control" role="button" data-success="false" data-action="next">
+                        <div class="btn btn-secondary js-step-result" role="button" data-success="false">
                             <i class="fa fa-thumbs-down"></i> ${this._textFail}
                         </div>
                         <div class="btn btn-secondary js-step-result js-carousel-control" role="button" data-success="true" data-action="next">
                             <i class="fa fa-thumbs-up"></i> ${this._textSuccess}
                         </div>
+                        <div class="pt-2 js-step-blocked-text hidden">${this._textStepBlocked}</div>
                     </div>
                 </div>
                 <div class="card-block">

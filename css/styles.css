@@ -94,6 +94,10 @@ textarea {
     transform-origin: left top 0;
 }
 
+.hidden {
+    display: none;
+}
+
 /*Страница тестирования. Боковая панель*/
 .js-testing-sidebar-pane .list-group-item:first-child {
     border-top: 0;
