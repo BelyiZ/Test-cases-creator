@@ -109,6 +109,7 @@
 
     AbstractEntityInfoPage.prototype.enable = function () {
         this._bindWidgetsEvents();
+        this.$manageItemBtnsContainer.show();
         this._ready();
     };
 

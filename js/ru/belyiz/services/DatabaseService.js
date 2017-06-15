@@ -37,6 +37,8 @@
         this._msgUnparsedError = 'Произошла ошибка во время работы с базой данных. Подробности: <br> ';
         this._msgNonDatabaseError = 'Произошла кое-какая ошибка. Подробности: <br> ';
         this._msgCloseWithoutSelectMsg = 'Нельзя просто так взять и закрыть окно, ничего не выбрав!';
+        this._msgRemoteConnectFailed = 'Не возможно подключиться к удаленной БД. Приложение будет использовать локальную версию.';
+
 
         this._eventHandlers = {};
         this._eventNames = {
@@ -103,6 +105,9 @@
             .on('error', (err) => console.error('Database sync error. ' + err));
     };
 
+    /**
+     * Инициализирует диалог выбора базы данных
+     */
     DatabaseService.prototype._initDbChoosingDialog = function () {
         this.dbChoosingModal = new widgets.Modal({
             title: 'Нужно выбрать базу данных',
@@ -132,14 +137,22 @@
             }
         });
 
-        this.dbChoosingModal.on('cancel', function () {
-            this.localSystemDB
-                .put({_id: this.remoteDbSettingsId, _rev: this.remoteDbSettingsRev, name: this.localDBName, local: true})
-                .then(this._initDatabases.bind(this))
-                .catch(this.processError.bind(this));
-        }, this);
+        this.dbChoosingModal.on('cancel', this.setUsingLocalDB, this);
     };
 
+    /**
+     * Переключение на локальную базу данных
+     */
+    DatabaseService.prototype.setUsingLocalDB = function () {
+        this.localSystemDB
+            .put({_id: this.remoteDbSettingsId, _rev: this.remoteDbSettingsRev, name: this.localDBName, local: true})
+            .then(this._initDatabases.bind(this))
+            .catch(this.processError.bind(this));
+    };
+
+    /**
+     * Показывает модальное окно со списком баз данных на удаленном сервере с возможностью переключения на одну из них или локальную базу
+     */
     DatabaseService.prototype.showDbChoosingDialog = function () {
         $.ajax({
             url: this.remoteDbUrl + '/_all_dbs',
@@ -156,6 +169,10 @@
                 }
                 this.dbChoosingModal.setContentHtml($dbsList[0].outerHTML);
                 this.dbChoosingModal.show();
+            },
+            error: (xhr) => {
+                services.Notification.warning(this._msgRemoteConnectFailed);
+                this.setUsingLocalDB();
             }
         });
     };
